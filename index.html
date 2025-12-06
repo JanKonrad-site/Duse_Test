@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>DUŠE – Maják (rhythm clicker)</title>
+
+  <!-- Moderní fonty -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/menu.css">
+  <link rel="stylesheet" href="./css/game.css">
+  <link rel="stylesheet" href="./css/soul.css">
+  <link rel="stylesheet" href="./css/bubbles.css">
+</head>
+<body>
+
+  <!-- MENU SCREEN -->
+  <div id="menuScreen" class="menu-screen">
+    <div class="neon-bg">
+      <div class="glowing">
+        <span style="--i:1;"></span>
+        <span style="--i:2;"></span>
+        <span style="--i:3;"></span>
+      </div>
+      <div class="glowing">
+        <span style="--i:1;"></span>
+        <span style="--i:2;"></span>
+        <span style="--i:3;"></span>
+      </div>
+      <div class="glowing">
+        <span style="--i:1;"></span>
+        <span style="--i:2;"></span>
+        <span style="--i:3;"></span>
+      </div>
+      <div class="glowing">
+        <span style="--i:1;"></span>
+        <span style="--i:2;"></span>
+        <span style="--i:3;"></span>
+      </div>
+    </div>
+
+    <div class="menu-content">
+      <div class="main-menu-panel">
+        <div class="main-menu-nav">
+          <div class="game-logo">DUŠE</div>
+          <div class="menu-links">
+            <button id="menuNewGame" class="menu-link active">Nová hra</button>
+            <button id="menuLevels" class="menu-link">Levely</button>
+            <button id="menuHowTo"  class="menu-link">Jak hrát</button>
+          </div>
+        </div>
+
+        <div class="main-menu-content">
+          <!-- Sekce: NOVÁ HRA (výchozí) -->
+          <section class="menu-section menu-section-new menu-section-active" data-section="new">
+            <div>
+              <div class="main-menu-heading">Neonový svět světla a ticha</div>
+              <p class="main-menu-tagline">
+                Rytmická klikací hra, kde duše sbírá světelné kapky, odhaluje skrytý obraz
+                a podle hudby se rozhoduje, jestli se rozhoří… nebo rozplyne.
+              </p>
+
+              <div class="hero-level level-card">
+                <h3>Pokračovat do levelu „Maják“</h3>
+                <div class="level-meta">Level 1 · střední obtížnost</div>
+                <p>Noc, moře, vítr a osamělý maják. První cesta duše za světlem.</p>
+                <button id="playMajakFromMenu" class="btn primary btn-big">
+                  ▶ Začít hrát
+                </button>
+              </div>
+            </div>
+
+            <div class="main-menu-tip">
+              Tip: dej si prohlížeč do režimu celé obrazovky (F11) a vezmi sluchátka 🎧
+            </div>
+          </section>
+
+          <!-- Sekce: LEVELY -->
+          <section class="menu-section menu-section-levels" data-section="levels">
+            <div>
+              <div class="main-menu-heading">Výběr levelu</div>
+              <p class="main-menu-tagline">
+                Postupně přibudou další krajiny – zatím je dostupný první level „Maják“.
+              </p>
+
+              <div class="level-list">
+                <div class="level-card">
+                  <h3>Maják</h3>
+                  <div class="level-meta">Level 1 · střední obtížnost</div>
+                  <p>Noc, moře, vítr a osamělý maják. První cesta duše za světlem.</p>
+                  <button class="btn primary" onclick="document.getElementById('playMajakFromMenu').click()">
+                    Hrát level „Maják“
+                  </button>
+                </div>
+
+                <div class="level-card level-card-disabled">
+                  <h3>Další level</h3>
+                  <div class="level-meta">Brzy</div>
+                  <p>Ještě se rodí v mlze…</p>
+                  <button class="btn" disabled>Locked</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Sekce: JAK HRÁT – animovaný náhled -->
+          <section class="menu-section menu-section-howto" data-section="how">
+            <div>
+              <div class="main-menu-heading">Jak hrát</div>
+              <p class="main-menu-tagline">
+                Podívej se na mini scénu: kapka letí, klik vytvoří šplouch a duše se rozzáří.
+              </p>
+
+              <div class="tutorial-layout">
+                <div class="tutorial-visual">
+                  <div class="tutorial-placeholder">
+                    <div class="tv-bg"></div>
+                    <div class="tv-soul"></div>
+                    <div class="tv-bubble"></div>
+                    <div class="tv-splash"></div>
+                    <div class="tv-click-hint">klik</div>
+                  </div>
+                </div>
+
+                <div class="tutorial-text">
+                  <p><strong>1)</strong> Kapky světla se rodí vpravo a letí <strong>zprava doleva</strong> – tady máš malý náhled jedné kapky.</p>
+                  <p><strong>2)</strong> Když klikneš do prostoru kolem kapky, vznikne <strong>šplouchnutí</strong> – rozšiřující se kruh, který ji může trefit.</p>
+                  <p><strong>3)</strong> Přímý zásah do kapky je <strong>super hit</strong>: větší šplouch, duše víc vyroste a získáš víc bodů.</p>
+                  <p><strong>4)</strong> Za zásahy se pozadí levelu postupně <strong>vybarvuje</strong>. Minuté kapky naopak duši zmenšují.</p>
+                  <p><strong>5)</strong> Ideální je klikat <strong>do rytmu skladby</strong> – jako kdybys hrál beat, ne spamoval myš.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="gameScreen" class="game-area hidden">
+    <div class="world" id="world">
+      <div class="scroll-track" id="scrollTrack">
+        <img id="bgImage1" src="" alt="level background" draggable="false">
+        <img id="bgImage2" src="" alt="level background copy" draggable="false">
+      </div>
+
+      <div class="soul-wrapper" id="soulWrapper">
+        <div class="soul-float">
+          <div class="soul" id="soul">
+            <div class="soul-core"></div>
+            <div class="soul-particles">
+              <div class="soul-rotate">
+                <div class="soul-angle"><div class="soul-size"><div class="soul-position"><div class="soul-pulse"><div class="soul-particle-dot"></div></div></div></div></div>
+                <div class="soul-angle"><div class="soul-size"><div class="soul-position"><div class="soul-pulse"><div class="soul-particle-dot"></div></div></div></div></div>
+                <div class="soul-angle"><div class="soul-size"><div class="soul-position"><div class="soul-pulse"><div class="soul-particle-dot"></div></div></div></div></div>
+                <div class="soul-angle"><div class="soul-size"><div class="soul-position"><div class="soul-pulse"><div class="soul-particle-dot"></div></div></div></div></div>
+                <div class="soul-angle"><div class="soul-size"><div class="soul-position"><div class="soul-pulse"><div class="soul-particle-dot"></div></div></div></div></div>
+                <div class="soul-angle"><div class="soul-size"><div class="soul-position"><div class="soul-pulse"><div class="soul-particle-dot"></div></div></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TEMPLATE bubliny -->
+    <div class="bubble" id="bubbleTemplate"></div>
+
+    <div class="hud-top">
+      <button id="restartBtn" class="btn">Restart</button>
+      <button id="backToMenuInHud" class="btn">Menu</button>
+      <button id="muteBtn" class="btn">Mute</button>
+
+      <!-- timeline / název skladby – waveform -->
+      <div id="timeInfo">
+       
+        ♪ Maják 
+        
+        <div class="waveform-wrap">
+          
+          
+          <!-- šedé pozadí waveformy -->
+          <svg class="waveform waveform-bg" viewBox="0 0 100 16" preserveAspectRatio="none">
+            <polyline class="waveform-shape" points="
+              0,8  2,6  4,10  6,5  8,11 10,4
+              12,12 14,5 16,11 18,6 20,10 22,4
+              24,12 26,5 28,11 30,6 32,10 34,4
+              36,12 38,5 40,11 42,6 44,10 46,4
+              48,12 50,5 52,11 54,6 56,10 58,4
+              60,12 62,5 64,11 66,6 68,10 70,4
+              72,12 74,5 76,11 78,6 80,10 82,4
+              84,12 86,5 88,11 90,6 92,10 94,7
+              96,9  98,8 100,8
+            " />
+          </svg>
+
+          <!-- barevná waveform – vyplňuje se podle --progress -->
+          <svg class="waveform waveform-fg" viewBox="0 0 100 16" preserveAspectRatio="none">
+            <polyline class="waveform-shape" points="
+              0,8  2,6  4,10  6,5  8,11 10,4
+              12,12 14,5 16,11 18,6 20,10 22,4
+              24,12 26,5 28,11 30,6 32,10 34,4
+              36,12 38,5 40,11 42,6 44,10 46,4
+              48,12 50,5 52,11 54,6 56,10 58,4
+              60,12 62,5 64,11 66,6 68,10 70,4
+              72,12 74,5 76,11 78,6 80,10 82,4
+              84,12 86,5 88,11 90,6 92,10 94,7
+              96,9  98,8 100,8
+            " />
+          </svg>
+        </div>
+        
+      </div>
+
+      <span id="scoreInfo">Skóre: 0</span>
+      <span id="statusText" class="status-message"></span>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <!-- INTRO LEVELU – minimalistický artový úvod -->
+    <div class="overlay overlay-intro" id="levelIntroOverlay">
+      <div class="overlay-panel intro-panel">
+        <p class="intro-line intro-line-1">
+          Ticho. Jen tmavá voda a bod světla v dálce.
+        </p>
+        <p class="intro-line intro-line-2">
+          Duše čeká, až ji pustíš na cestu.
+        </p>
+        <p class="intro-line intro-line-3">
+          Hraj do rytmu. Co netrefíš, zmizí.
+        </p>
+
+        <button id="startBtn" class="intro-start">Spustit level</button>
+        <button id="backToMenuFromIntro" class="intro-back">Zpět do menu</button>
+
+        <div id="imageStatus" class="image-status"></div>
+      </div>
+    </div>
+
+    <!-- VÝSLEDKY -->
+    <div class="overlay overlay-hidden" id="resultOverlay">
+      <div class="overlay-panel">
+        <h2>Výsledek levelu</h2>
+        <div id="resultStats"></div>
+        <button id="playAgainBtn" class="btn primary">Hrát level znovu</button>
+        <button id="backToMenuFromResult" class="btn" style="margin-left:8px;">Zpět do menu</button>
+      </div>
+    </div>
+  </div>
+  <div id="cursorLight"></div>
+
+  <audio id="music" preload="auto"></audio>
+
+  <script src="./scripts/config.js"></script>
+  <script src="./scripts/game.js"></script>
+  <script src="./scripts/ui.js"></script>
+</body>
+</html>
