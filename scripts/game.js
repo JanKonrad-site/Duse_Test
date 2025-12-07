@@ -15,11 +15,20 @@ function updateScoreHud() {
 }
 
 function updateSoulVisual() {
-  const size = SOUL_BASE_SIZE * soulSize;
+  // detekce typu pointeru – jestli je dostupná „jemná“ myš
+  const hasFinePointer =
+    window.matchMedia &&
+    window.matchMedia('(any-pointer: fine)').matches;
+
+  // na zařízeních bez myši (mobil / tablet) uděláme duši menší
+  const baseFactor = hasFinePointer ? 1.0 : 0.75;
+
+  const size = SOUL_BASE_SIZE * baseFactor * soulSize;
   soul.style.width  = size + 'px';
   soul.style.height = size + 'px';
   soul.style.opacity = Math.max(0, soulSize);
 }
+
   function resetSoulParticles() {
     if (!soulParticlesContainer) return;
     const extras = soulParticlesContainer.querySelectorAll('.soul-extra-particle');

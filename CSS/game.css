@@ -21,21 +21,21 @@
 
 .scroll-track {
   display: flex;
-  width: 200%;                  /* DŮLEŽITÉ pro nekonečné „plynutí“ */
+  width: 200%;                  /* důležité pro plynutí */
   height: 100%;
   filter: grayscale(1);
   transition: filter 0.3s ease-out, opacity 0.3s ease-out;
-  animation: scrollLeft 18s linear infinite; /* můžeš si zrychlit/zpomalit */
+  animation: scrollLeft 18s linear infinite;
   pointer-events: none;
   opacity: 0;
-  background: #000;             /* když někde „vykoukne“ podklad, bude černý */
+  background: #000;
 }
 
 .scroll-track img {
-  flex: 0 0 50%;                /* každá půlku tracku */
+  flex: 0 0 50%;
   width: 50%;
   height: 100%;
-  object-fit: cover;            /* vyplní plochu – žádné pruhy, hezký flow */
+  object-fit: cover;            /* vyplní plochu, zachovává feel "svět plyne" */
   object-position: center center;
   display: block;
   pointer-events: none;
@@ -43,7 +43,8 @@
   user-select: none;
 }
 
-/* ANIMACE – posun doleva o polovinu šířky (200% → -50%) */
+/* ANIMACE – posun doleva o polovinu šířky */
+
 @keyframes scrollLeft {
   0% {
     transform: translateX(0);
@@ -53,19 +54,19 @@
   }
 }
 
-/* Jemné doladění pro extrémní poměry stran */
+/* jemné doladění pro extrémní poměry stran */
 
-/* Hodně vysoké displeje (např. 9:16) – radši ořežeme víc do stran */
+/* hodně vysoké displeje (např. hodně na výšku) */
 @media (max-aspect-ratio: 3/4) {
   .scroll-track img {
-    object-position: center 45%; /* můžeš si posunout nahoře/dole, když chceš */
+    object-position: center 45%;
   }
 }
 
-/* Hodně široké monitory (ultrawide) – malý posun „fokusu“ obrázku */
+/* ultraširoké monitory */
 @media (min-aspect-ratio: 21/9) {
   .scroll-track img {
-    object-position: 50% 40%;   /* o něco výš, aby se tolik neřezal spodek */
+    object-position: 50% 40%;
   }
 }
 
@@ -86,7 +87,7 @@
   box-shadow: none;
 }
 
-/* Schováme nepotřebné prvky v horním HUDu */
+/* skryjeme prvky, které v tomhle artovém módu nepoužíváme */
 #restartBtn,
 #muteBtn,
 #scoreInfo,
@@ -94,7 +95,7 @@
   display: none !important;
 }
 
-/* Tlačítko MENU – neon styl z .btn, jen zmenšíme */
+/* tlačítko MENU – neon styl z .btn, jen menší */
 #backToMenuInHud.btn {
   padding: 6px 16px;
   font-size: 12px;
@@ -131,6 +132,7 @@
 }
 
 /* řádek s waveform + tlačítkem */
+
 .waveform-wrap {
   position: relative;
   display: flex;
@@ -140,6 +142,7 @@
 }
 
 /* tlačítko play/pause */
+
 .track-btn {
   flex: 0 0 22px;
   width: 22px;
@@ -150,7 +153,7 @@
   color: #d6ecff;
   font-size: 12px;
   cursor: pointer;
-  pointer-events: auto; /* jediný prvek uvnitř badge, který je klikací */
+  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,9 +170,10 @@
 }
 
 /* waveform vedle tlačítka */
+
 .waveform {
   position: absolute;
-  left: 32px;   /* ~ šířka tlačítka + mezera */
+  left: 32px;
   right: 0;
   top: 0;
   bottom: 0;
@@ -178,6 +182,7 @@
 }
 
 /* společný tvar */
+
 .waveform-shape {
   fill: none;
   stroke-linejoin: round;
@@ -185,12 +190,14 @@
 }
 
 /* šedé pozadí */
+
 .waveform-bg .waveform-shape {
   stroke: rgba(155, 175, 205, 0.6);
   stroke-width: 1.2;
 }
 
 /* barevná část – roztahuje se podle --progress */
+
 .waveform-fg {
   transform-origin: left center;
   transform: scaleX(var(--progress));
@@ -204,6 +211,7 @@
 }
 
 /* název skladby */
+
 .track-header {
   display: flex;
   align-items: center;
@@ -314,12 +322,12 @@
 -------------------------------------------------- */
 
 .overlay-intro {
-  background: #000;              /* čistě černá, bez gradientů */
+  background: #000;
 }
 
 .overlay-intro .overlay-panel {
   max-width: 640px;
-  background: transparent;       /* žádný rámeček, žádný panel */
+  background: transparent;
   border: none;
   box-shadow: none;
   padding: 32px 24px;
@@ -404,8 +412,6 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* imageStatus v intru úplně v pozadí */
-
 .overlay-intro .image-status {
   margin-top: 12px;
   font-size: 11px;
@@ -414,11 +420,12 @@
 
 /* -------------------------------------------------
    CUSTOM CURSOR – LIGHT ORB
+   + ROZLIŠENÍ MYŠ vs. PRST
 -------------------------------------------------- */
 
-body,
-html {
-  cursor: none;
+html,
+body {
+  /* kurzor řešíme níž podle pointeru; tady jen chování dotyku */
   touch-action: none;
 }
 
@@ -426,16 +433,7 @@ html {
   touch-action: none;
 }
 
-/* VŠECHNO interaktivní bez kurzoru */
-button,
-a,
-[role="button"],
-.btn,
-#menuScreen,
-#gameScreen,
-#world {
-  cursor: none !important;
-}
+/* základní styl orb světýlka */
 
 #cursorLight {
   position: fixed;
@@ -450,13 +448,59 @@ a,
   opacity: 0.8;
   transition: width 0.15s ease, height 0.15s ease, opacity 0.25s ease;
   filter: blur(3px);
+  display: none; /* defaultně skryté, zapneme jen pro myš */
 }
 
-/* při kliknutí krátké zablesknutí */
+/* klik – zablesknutí */
+
 #cursorLight.click {
   width: 34px;
   height: 34px;
   opacity: 1;
+}
+
+/* Všechno interaktivní má defaultní kurzor,
+   konkrétní chování přepneme v media queries níž */
+
+button,
+a,
+[role="button"],
+.btn,
+#menuScreen,
+#gameScreen,
+#world {
+  cursor: auto;
+}
+
+/* Zařízení s FINE pointerem (myš, trackpad) → zobraz kurzor world-ORB */
+
+@media (any-pointer: fine) {
+  html,
+  body {
+    cursor: none;
+  }
+
+  button,
+  a,
+  [role="button"],
+  .btn,
+  #menuScreen,
+  #gameScreen,
+  #world {
+    cursor: none !important;
+  }
+
+  #cursorLight {
+    display: block;
+  }
+}
+
+/* Zařízení s COARSE pointerem (prst) → orb vůbec nezobrazuj */
+
+@media (any-pointer: coarse) {
+  #cursorLight {
+    display: none;
+  }
 }
 
 /* -------------------------------------------------
@@ -464,6 +508,7 @@ a,
 -------------------------------------------------- */
 
 /* tablety / menší notebooky */
+
 @media (max-width: 1024px) {
   .hud-top {
     top: 10px;
@@ -501,7 +546,8 @@ a,
   }
 }
 
-/* mobily / úzké zobrazení – panel zmenšíme a necháme uprostřed */
+/* mobily / úzké zobrazení – zen panel opravdu malý, nenápadný */
+
 @media (max-width: 600px) {
   .hud-top {
     top: 8px;
@@ -511,13 +557,13 @@ a,
   #timeInfo {
     left: 50%;
     transform: translateX(-50%);
-    min-width: 160px;
-    max-width: 200px;
+    min-width: 150px;
+    max-width: 180px;
     width: auto;
-    height: 34px;
+    height: 30px;
     bottom: 8px;
-    padding: 3px 8px 5px;
-    font-size: 9px;
+    padding: 3px 6px 4px;
+    font-size: 8.5px;
     border-radius: 999px;
     box-shadow:
       0 0 10px rgba(0, 0, 0, 0.6),
@@ -525,21 +571,21 @@ a,
   }
 
   .waveform-wrap {
-    height: 10px;
+    height: 9px;
     gap: 4px;
   }
 
   .track-btn {
-    flex: 0 0 16px;
-    width: 16px;
-    height: 16px;
-    font-size: 8px;
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
     border-width: 1px;
     padding: 0;
   }
 
   .waveform {
-    left: 22px;
+    left: 20px;
   }
 
   .waveform-bg .waveform-shape {
@@ -547,7 +593,7 @@ a,
   }
 
   .waveform-fg .waveform-shape {
-    stroke-width: 1.1;
+    stroke-width: 1.0;
   }
 
   .overlay-panel {
@@ -574,31 +620,33 @@ a,
 }
 
 /* extra malé telefony */
+
 @media (max-width: 400px) {
   #timeInfo {
-    min-width: 150px;
-    max-width: 180px;
-    height: 30px;
-    padding: 3px 6px 4px;
+    min-width: 140px;
+    max-width: 170px;
+    height: 28px;
+    padding: 2px 5px 4px;
     font-size: 8px;
   }
 
   .waveform-wrap {
-    height: 9px;
+    height: 8px;
   }
 
   .track-btn {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     font-size: 7px;
   }
 
   .waveform {
-    left: 20px;
+    left: 18px;
   }
 }
 
 /* velké / ultraširoké monitory */
+
 @media (min-width: 1800px) {
   .hud-top {
     top: 24px;
