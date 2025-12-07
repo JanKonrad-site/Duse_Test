@@ -169,27 +169,48 @@ function buildPatternForMusic() {
 }
 
 function updateBackgroundProgress(progress) {
+  // progress 0..1 → 0 = úplná tma, 0.33 = plná černobílá, 1 = plná barva
   const p = Math.max(0, Math.min(1, progress));
-  let opacity, grayscale;
+  let opacity;
+  let grayscale;
 
-  if (p < 0.5) {
-    const phase = p / 0.5;
-    opacity = 0.1 + 0.9 * phase;
-    grayscale = 1;
+  if (p <= 0.33) {
+    // 0 → 0.33: obrázek se vynořuje z černé do jasné černobílé
+    const phase = p / 0.33;   // 0 → 1
+    opacity   = phase;        // 0 → 1 (na začátku fakt úplně černá)
+    grayscale = 1;            // pořád BW
   } else {
-    const phase = (p - 0.5) / 0.5;
-    opacity = 1;
-    grayscale = 1 - phase;
+    // 0.33 → 1: obrázek je vidět, jen se odbarvuje do plné barvy
+    const phase = (p - 0.33) / (1 - 0.33); // 0 → 1
+    opacity   = 1;
+    grayscale = 1 - phase;    // 1 → 0 (BW → barva)
   }
 
   scrollTrack.style.opacity = opacity;
-  scrollTrack.style.filter = `grayscale(${grayscale})`;
+  scrollTrack.style.filter  = `grayscale(${grayscale})`;
+}
+function resetCombo() {
+  currentStreak = 0;
+}
+
+function handleComboHit() {
+  maxStreak = Math.max(maxStreak, currentStreak);
+
+  // flash při dosažení 5 / 10 / 20 / 30 zásahů v řadě
+  if (comboMilestones.includes(currentStreak)) {
+    scrollTrack.classList.remove('bg-flash');
+    // restart CSS animace
+    void scrollTrack.offsetWidth;
+    scrollTrack.classList.add('bg-flash');
+  }
 }
 
 function registerMiss() {
   if (!levelRunning) return;
 
   misses++;
+  resetCombo(); // ztráta série, ale jen když bublina uteče
+
   soulSize = Math.max(0, soulSize - SOUL_SHRINK_PER_MISS);
   updateSoulVisual();
 
@@ -244,6 +265,9 @@ function resetLevelState() {
   updateScoreHud();
   statsEl.textContent = '';
   statusText.textContent = '';
+
+  currentStreak = 0;
+  maxStreak = 0;
 
   lastFrameTime = 0;
   resetSoul();
@@ -397,6 +421,48 @@ function startLevel() {
 
   schedulePattern();
 }
+function createSplashColor(clientX, clientY, isSuper) {
+  const rect = world.getBoundingClientRect();
+  const xPercent = ((clientX - rect.left) / rect.width) * 100;
+  const yPercent = ((clientY - rect.top) / rect.height) * 100;
+
+  const patch = document.createElement('div');
+  patch.className = 'splash-color';
+  if (isSuper) patch.classList.add('splash-color-super');
+
+  // kruhové „okno“ na pozici kliku
+  patch.style.left = xPercent + '%';
+  patch.style.top  = yPercent + '%';
+
+  patch.style.position = 'absolute';
+  patch.style.pointerEvents = 'none';
+
+  // velikost patche – větší při zásahu bubliny
+  const patchSize = isSuper ? 220 : 160; // px
+  patch.style.width  = patchSize + 'px';
+  patch.style.height = patchSize + 'px';
+
+  patch.style.borderRadius = '50%';
+  patch.style.overflow = 'hidden';
+
+  const bg1 = document.getElementById('bgImage1');
+  if (bg1 && bg1.src) {
+    patch.style.backgroundImage  = `url('${bg1.src}')`;
+    patch.style.backgroundRepeat = 'no-repeat';
+    patch.style.backgroundSize   = rect.width + 'px ' + rect.height + 'px';
+
+    const offsetX = (clientX - rect.left) - patchSize / 2;
+    const offsetY = (clientY - rect.top) - patchSize / 2;
+    patch.style.backgroundPosition = `-${offsetX}px -${offsetY}px`;
+  }
+
+  world.appendChild(patch);
+
+  setTimeout(() => {
+    if (patch.parentNode) patch.parentNode.removeChild(patch);
+  }, isSuper ? 550 : 420);
+}
+
 
 function createSplashAtClient(clientX, clientY, isSuper) {
   const rect = world.getBoundingClientRect();
@@ -409,6 +475,9 @@ function createSplashAtClient(clientX, clientY, isSuper) {
   splash.style.left = xPercent + '%';
   splash.style.top  = yPercent + '%';
   world.appendChild(splash);
+
+  // barevná výseč obrázku pod šplouchnutím
+  createSplashColor(clientX, clientY, isSuper);
 
   const createdAt = performance.now();
   const lifeMs    = isSuper ? 450 : 350;
@@ -524,6 +593,8 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   if (!bubbleObj || bubbleObj.hit || bubbleObj.missed) return;
 
   hits++;
+    currentStreak++;
+  handleComboHit();
 
   const rectWorld  = world.getBoundingClientRect();
   const rectBubble = bubbleObj.el.getBoundingClientRect();
