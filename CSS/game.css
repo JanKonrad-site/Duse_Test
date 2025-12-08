@@ -30,24 +30,6 @@
   opacity: 0;
   background: #000;
 }
-/* krátký barevný flash pozadí při COMBO */
-.scroll-track.bg-flash {
-  animation: bgFlash 0.3s ease-out;
-}
-
-@keyframes bgFlash {
-  0% {
-    filter: grayscale(0) saturate(1.6);
-  }
-  50% {
-    filter: grayscale(0) saturate(2.0);
-  }
-  100% {
-    /* po animaci se vrátí původní hodnota z JS (bez forwards) */
-    filter: grayscale(0.4) saturate(1.0);
-  }
-}
-
 
 .scroll-track img {
   flex: 0 0 50%;
@@ -678,4 +660,161 @@ a,
   .overlay-panel {
     max-width: 640px;
   }
+}
+/* =========================================
+   CLICK SPLASH + COLOR FRAGMENT
+   ========================================= */
+
+/* kruhový šplouch po kliku */
+.world-splash {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 210, 240, 0.8);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: worldSplash 0.45s ease-out forwards;
+  z-index: 4; /* nad pozadím, pod HUDem */
+}
+
+.world-splash-hit {
+  border-color: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 0 8px rgba(150, 230, 255, 0.9),
+    0 0 18px rgba(120, 200, 255, 0.7);
+}
+
+.world-splash-super {
+  border-width: 3px;
+  animation: worldSplashSuper 0.55s ease-out forwards;
+}
+
+@keyframes worldSplash {
+  0% {
+    transform: translate(-50%, -50%) scale(0.35);
+    opacity: 0.0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes worldSplashSuper {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0.0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* barevný výřez – okno do barevného obrazu v místě kliku */
+.world-splash-color {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  animation: worldSplashColor 0.5s ease-out forwards;
+  box-shadow:
+    0 0 14px rgba(120, 210, 255, 0.75),
+    0 0 26px rgba(80, 180, 255, 0.65);
+  z-index: 3;
+}
+
+.world-splash-color-super {
+  box-shadow:
+    0 0 18px rgba(200, 240, 255, 0.9),
+    0 0 40px rgba(140, 220, 255, 0.85);
+}
+
+@keyframes worldSplashColor {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+}
+
+/* krátký světelný “glow” kolem bubliny při hitu */
+.world-bubble-light {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(150, 230, 255, 0.85) 35%,
+    rgba(30, 120, 200, 0.4) 60%,
+    transparent 80%
+  );
+  mix-blend-mode: screen;
+  animation: worldBubbleLight 0.45s ease-out forwards;
+  z-index: 5;
+}
+
+@keyframes worldBubbleLight {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+
+/* =========================================
+   LIGHTNING FLASH – BLESK PŘES CELÝ LEVEL
+   ========================================= */
+
+#lightningOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6; /* nad světem, pod HUDem */
+  opacity: 0;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.9), transparent 55%),
+    radial-gradient(circle at 80% 100%, rgba(170, 220, 255, 0.9), transparent 60%),
+    rgba(255, 255, 255, 0.0);
+  mix-blend-mode: screen;
+}
+
+#lightningOverlay.flash-active {
+  animation: worldLightningFlash 0.35s ease-out;
+}
+
+@keyframes worldLightningFlash {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { opacity: 0.45; }
+  100% { opacity: 0; }
 }

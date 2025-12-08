@@ -87,8 +87,3 @@ let spawnTimeouts = [];
 let endTimeoutId = null;
 let lastFrameTime = 0;
 let activeSplashes = [];
-
-// COMBO / STREAK
-let currentStreak = 0;
-let maxStreak = 0;
-const comboMilestones = [5, 10, 20, 30];
