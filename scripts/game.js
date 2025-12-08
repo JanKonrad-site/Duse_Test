@@ -6,8 +6,6 @@ window.addEventListener('load', () => {
     });
   document.body.style.cursor = 'none';
 });
-
-const lightningOverlay = document.getElementById('lightningOverlay');
 // Zákaz přetahování obrázků (ghost image při drag & drop)
 document.addEventListener('dragstart', function (e) {
   e.preventDefault();
@@ -400,70 +398,37 @@ function startLevel() {
   schedulePattern();
 }
 
-function createSplashColor(clientX, clientY, isSuper) {
-  if (!world) return;
+function createSplashAtClient(clientX, clientY, isSuper) {
+  const rect = world.getBoundingClientRect();
+  const xPercent = ((clientX - rect.left) / rect.width) * 100;
+  const yPercent = ((clientY - rect.top) / rect.height) * 100;
 
-  const worldRect = world.getBoundingClientRect();
-  const patchSize = isSuper ? 180 : 110; // větší pro super hit
+  const splash = document.createElement('div');
+  splash.className = 'splash';
+  if (isSuper) splash.classList.add('splash-super', 'splash-hit');
+  splash.style.left = xPercent + '%';
+  splash.style.top  = yPercent + '%';
+  world.appendChild(splash);
 
-  const patch = document.createElement('div');
-  patch.className = 'world-splash-color';
-  if (isSuper) patch.classList.add('world-splash-color-super');
+  const createdAt = performance.now();
+  const lifeMs    = isSuper ? 450 : 350;
+  const maxRadius = (SPLASH_BASE_SIZE / 2) * (isSuper ? 2.0 : 1.4);
 
-  // pozice v procentech vzhledem k WORLD
-  const xPercent = ((clientX - worldRect.left) / worldRect.width) * 100;
-  const yPercent = ((clientY - worldRect.top)  / worldRect.height) * 100;
-
-  patch.style.left  = xPercent + '%';
-  patch.style.top   = yPercent + '%';
-  patch.style.width  = patchSize + 'px';
-  patch.style.height = patchSize + 'px';
-
-  // pozadí bereme z posouvajícího se obrázku (bgImage1 / bgImage2)
-  let srcImg = null;
-  const imgCandidates = [bgImage1, bgImage2].filter(Boolean);
-
-  for (const img of imgCandidates) {
-    const r = img.getBoundingClientRect();
-    if (
-      clientX >= r.left &&
-      clientX <= r.right &&
-      clientY >= r.top &&
-      clientY <= r.bottom
-    ) {
-      srcImg = img;
-      break;
-    }
-  }
-
-  // fallback – kdyby click byl mimo, vezmeme první obrázek
-  if (!srcImg && imgCandidates.length > 0) {
-    srcImg = imgCandidates[0];
-  }
-
-  if (srcImg && srcImg.src) {
-    const imgRect = srcImg.getBoundingClientRect();
-
-    patch.style.backgroundImage  = `url('${srcImg.src}')`;
-    patch.style.backgroundRepeat = 'no-repeat';
-    patch.style.backgroundSize   = imgRect.width + 'px ' + imgRect.height + 'px';
-
-    const imgX = clientX - imgRect.left;
-    const imgY = clientY - imgRect.top;
-
-    const bgPosX = imgX - patchSize / 2;
-    const bgPosY = imgY - patchSize / 2;
-
-    patch.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
-  }
-
-  world.appendChild(patch);
+  activeSplashes.push({
+    el: splash,
+    xPx: clientX,
+    yPx: clientY,
+    createdAt,
+    lifeMs,
+    maxRadius,
+    isSuper,
+    used: false
+  });
 
   setTimeout(() => {
-    if (patch.parentNode) patch.parentNode.removeChild(patch);
-  }, isSuper ? 550 : 420);
+    if (splash.parentNode) splash.parentNode.removeChild(splash);
+  }, lifeMs + 100);
 }
-
 
 function spawnBubbleFragments(bubbleObj) {
   const rectWorld  = world.getBoundingClientRect();
@@ -484,115 +449,6 @@ function spawnBubbleFragments(bubbleObj) {
     if (glow.parentNode) glow.parentNode.removeChild(glow);
   }, 500);
 }
-function createSplashColor(clientX, clientY, isSuper) {
-  if (!world) return;
-
-  const worldRect = world.getBoundingClientRect();
-  const patchSize = isSuper ? 180 : 110; // super hit je o něco větší
-
-  const patch = document.createElement('div');
-  patch.className = 'splash-color';
-  if (isSuper) patch.classList.add('splash-color-super');
-
-  // pozice v % v rámci WORLD – stejně jako šplouch
-  const xPercent = ((clientX - worldRect.left) / worldRect.width) * 100;
-  const yPercent = ((clientY - worldRect.top)  / worldRect.height) * 100;
-
-  patch.style.left  = xPercent + '%';
-  patch.style.top   = yPercent + '%';
-  patch.style.width  = patchSize + 'px';
-  patch.style.height = patchSize + 'px';
-
-  // zjistíme, přes který z obrázků jsme reálně klikli (bgImage1 / bgImage2)
-  let srcImg = null;
-  const imgCandidates = [bgImage1, bgImage2].filter(Boolean);
-
-  for (const img of imgCandidates) {
-    const r = img.getBoundingClientRect();
-    if (
-      clientX >= r.left &&
-      clientX <= r.right &&
-      clientY >= r.top &&
-      clientY <= r.bottom
-    ) {
-      srcImg = img;
-      break;
-    }
-  }
-
-  // fallback – když klikneš mimo, vezmeme prostě první obrázek
-  if (!srcImg && imgCandidates.length > 0) {
-    srcImg = imgCandidates[0];
-  }
-
-  if (srcImg && srcImg.src) {
-    const imgRect = srcImg.getBoundingClientRect();
-
-    patch.style.backgroundImage  = `url('${srcImg.src}')`;
-    patch.style.backgroundRepeat = 'no-repeat';
-    patch.style.backgroundSize   = imgRect.width + 'px ' + imgRect.height + 'px';
-
-    // souřadnice kliknutí vůči samotnému obrázku
-    const imgX = clientX - imgRect.left;
-    const imgY = clientY - imgRect.top;
-
-    // zarovnání výřezu tak, aby střed odpovídal místu kliknutí
-    const bgPosX = imgX - patchSize / 2;
-    const bgPosY = imgY - patchSize / 2;
-
-    patch.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
-  }
-
-  world.appendChild(patch);
-
-  // jemné rozplynutí – krátké, aby nerušilo pohyb pozadí
-  setTimeout(() => {
-    if (patch.parentNode) patch.parentNode.removeChild(patch);
-  }, isSuper ? 550 : 420);
-}
-
-function createSplashAtClient(clientX, clientY, isSuper) {
-  if (!world) return;
-
-  const rect = world.getBoundingClientRect();
-  const xPercent = ((clientX - rect.left) / rect.width) * 100;
-  const yPercent = ((clientY - rect.top)  / rect.height) * 100;
-
-  // kruhové vlnky – „šplouch“
-  const splash = document.createElement('div');
-  splash.className = 'splash';
-  if (isSuper) {
-    splash.classList.add('splash-super', 'splash-hit');
-  }
-  splash.style.left = xPercent + '%';
-  splash.style.top  = yPercent + '%';
-  world.appendChild(splash);
-
-  // *** tady přidáme barevný výřez obrázku přesně v místě kliku ***
-  createSplashColor(clientX, clientY, isSuper);
-
-  const createdAt = performance.now();
-  const lifeMs = isSuper ? 550 : 450;
-  const maxRadius = isSuper ? 180 : 110;
-
-  // tohle používá gameLoop pro „vlnu“, která může trefit bublinu
-  activeSplashes.push({
-    el: splash,
-    createdAt,
-    lifeMs,
-    xPx: clientX,
-    yPx: clientY,
-    maxRadius,
-    isSuper,
-    used: false
-  });
-
-  setTimeout(() => {
-    if (splash.parentNode) splash.parentNode.removeChild(splash);
-  }, lifeMs + 50);
-}
-
-
 
 function gameLoop() {
   const now = performance.now();
@@ -676,28 +532,13 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
   const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
 
-  function spawnBubbleFragments(bubbleObj) {
-  if (!world || !bubbleObj || !bubbleObj.el) return;
+  spawnBubbleFragments(bubbleObj);
 
-  const rectWorld  = world.getBoundingClientRect();
-  const rectBubble = bubbleObj.el.getBoundingClientRect();
-  const centerX = rectBubble.left + rectBubble.width / 2;
-  const centerY = rectBubble.top + rectBubble.height / 2;
-
-  const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
-  const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
-
-  const glow = document.createElement('div');
-  glow.className = 'world-bubble-light';
-  glow.style.left = xPercent + '%';
-  glow.style.top  = yPercent + '%';
-  world.appendChild(glow);
-
+  bubbleObj.hit = true;
+  bubbleObj.el.classList.add('bubble-pop');
   setTimeout(() => {
-    if (glow.parentNode) glow.parentNode.removeChild(glow);
-  }, 500);
-}
-
+    if (bubbleObj.el.parentNode) bubbleObj.el.parentNode.removeChild(bubbleObj.el);
+  }, POP_DURATION + 30);
 
   moveSoulTo(xPercent, yPercent);
 
@@ -743,109 +584,26 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
     endLevel('Odklikal jsi všechny kapky! 🎉');
   }
 }
-function createSplashColor(clientX, clientY, isSuper) {
-  if (!world) return;
-
-  const worldRect = world.getBoundingClientRect();
-  const patchSize = isSuper ? 180 : 110; // super zásah = větší okno
-
-  const patch = document.createElement('div');
-  patch.className = 'splash-color';
-  if (isSuper) patch.classList.add('splash-color-super');
-
-  // pozice v procentech v rámci WORLD – stejně jako šplouch
-  const xPercent = ((clientX - worldRect.left) / worldRect.width) * 100;
-  const yPercent = ((clientY - worldRect.top)  / worldRect.height) * 100;
-
-  patch.style.left  = xPercent + '%';
-  patch.style.top   = yPercent + '%';
-  patch.style.width  = patchSize + 'px';
-  patch.style.height = patchSize + 'px';
-
-  // vybereme, přes který z pozadí (bgImage1 / bgImage2) jsme klikli
-  let srcImg = null;
-  const imgCandidates = [bgImage1, bgImage2].filter(Boolean);
-
-  for (const img of imgCandidates) {
-    const r = img.getBoundingClientRect();
-    if (
-      clientX >= r.left &&
-      clientX <= r.right &&
-      clientY >= r.top &&
-      clientY <= r.bottom
-    ) {
-      srcImg = img;
-      break;
-    }
-  }
-
-  // fallback – když klikneš mimo obrázek, vezmeme prostě první
-  if (!srcImg && imgCandidates.length > 0) {
-    srcImg = imgCandidates[0];
-  }
-
-  if (srcImg && srcImg.src) {
-    const imgRect = srcImg.getBoundingClientRect();
-
-    patch.style.backgroundImage  = `url('${srcImg.src}')`;
-    patch.style.backgroundRepeat = 'no-repeat';
-    patch.style.backgroundSize   = imgRect.width + 'px ' + imgRect.height + 'px';
-
-    // souřadnice kliknutí vůči samotnému obrázku
-    const imgX = clientX - imgRect.left;
-    const imgY = clientY - imgRect.top;
-
-    // zarovnání výřezu tak, aby střed odpovídal místu kliknutí
-    const bgPosX = imgX - patchSize / 2;
-    const bgPosY = imgY - patchSize / 2;
-
-    patch.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
-  }
-
-  world.appendChild(patch);
-
-  // jemné rozplynutí – krátké, aby nerušilo pohyb pozadí
-  setTimeout(() => {
-    if (patch.parentNode) patch.parentNode.removeChild(patch);
-  }, isSuper ? 550 : 420);
-}
 
 function handleClickAt(clientX, clientY) {
   if (!levelRunning) return;
+  if (!bubbles.length) return;
 
-  let bestBubble = null;
-  let bestDist = Infinity;
-
+  let target = null;
   for (const b of bubbles) {
     if (b.hit || b.missed) continue;
-
     const rectBubble = b.el.getBoundingClientRect();
-    const bx = rectBubble.left + rectBubble.width / 2;
-    const by = rectBubble.top + rectBubble.height / 2;
-    const bubbleRadius = rectBubble.width / 2;
-
-    const dx = clientX - bx;
-    const dy = clientY - by;
-    const dist = Math.hypot(dx, dy);
-
-    if (dist <= bubbleRadius && dist < bestDist) {
-      bestDist = dist;
-      bestBubble = b;
+    if (
+      clientX >= rectBubble.left &&
+      clientX <= rectBubble.right &&
+      clientY >= rectBubble.top &&
+      clientY <= rectBubble.bottom
+    ) {
+      if (!target || b.xPercent > target.xPercent) {
+        target = b;
+      }
     }
   }
-
-  const directHit = !!bestBubble;
-
-  // šplouch + barevná výseč vždy – i při missu
-  createSplashAtClient(clientX, clientY, directHit);
-
-  if (directHit) {
-    // super–hit, protože jsme klikli přímo do bubliny
-    handleBubbleHit(bestBubble, true, clientX, clientY);
-  }
-  // miss – žádná penalizace, jen vizuál
-}
-
 
   const directHit = !!target;
   const isSuper = directHit;
@@ -854,7 +612,7 @@ function handleClickAt(clientX, clientY) {
   if (directHit) {
     handleBubbleHit(target, true, clientX, clientY);
   }
-
+}
 
 world.addEventListener('pointerdown', (e) => {
   handleClickAt(e.clientX, e.clientY);
