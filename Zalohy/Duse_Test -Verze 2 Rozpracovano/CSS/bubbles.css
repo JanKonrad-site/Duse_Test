@@ -1,0 +1,194 @@
+.bubble {
+  position: absolute;
+  /* velikost relativně k šířce okna, ale v rozumných mezích */
+  width: clamp(36px, 7vw, 80px);
+  height: clamp(36px, 7vw, 80px);
+  border-radius: 50%;
+  background-image: url('https://res.cloudinary.com/monson-productions/image/upload/v1645640126/glowey_yfdvor.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: none;
+  transform: translate(-50%, -50%);
+  cursor: none; /* kurzor řešíme custom světýlkem */
+  z-index: 10;
+  animation: bubbleDrift 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes bubbleDrift {
+  0%   { transform: translate(-50%, -50%) translateY(0); }
+  100% { transform: translate(-50%, -50%) translateY(-6px); }
+}
+
+.bubble-pop {
+  animation: bubblePop 0.22s ease-out forwards;
+}
+
+@keyframes bubblePop {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    filter: none;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+    filter: blur(1px);
+  }
+}
+
+.bubble-light {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle,
+    rgba(255,255,255,0.95) 0%,
+    rgba(150,230,255,0.85) 35%,
+    rgba(30,120,200,0.4) 60%,
+    transparent 80%);
+  mix-blend-mode: screen;
+  animation: bubbleLight 0.45s ease-out forwards;
+  z-index: 9;
+}
+
+@keyframes bubbleLight {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+
+/* Splash efekty */
+
+.splash {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 210, 240, 0.8);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: splash 0.35s ease-out forwards;
+  z-index: 8;
+}
+
+.splash-hit {
+  border-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 0 10px rgba(150,230,255,0.9);
+}
+
+.splash-super {
+  animation: splashSuper 0.45s ease-out forwards;
+  border-width: 3px;
+  box-shadow: 0 0 16px rgba(200,255,255,0.95);
+}
+
+@keyframes splash {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes splashSuper {
+  0% {
+    transform: translate(-50%, -50%) scale(0.25);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.0);
+    opacity: 0;
+  }
+}
+/* Barevné „okno“ do pozadí pod šplouchnutím */
+.splash-color {
+  position: absolute;
+  pointer-events: none;
+  z-index: 7;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0;
+  animation: splashColor 0.45s ease-out forwards;
+}
+
+.splash-color-super {
+  /* větší patch pro zásah bubliny – velikost řeší JS (patchSize) */
+  transform-origin: center;
+}
+
+@keyframes splashColor {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+}
+
+/* Text skóre */
+
+.float-text {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  text-shadow:
+    0 0 6px rgba(0, 200, 255, 1),
+    0 0 14px rgba(0, 150, 255, 0.9),
+    0 0 26px rgba(180, 245, 255, 0.9);
+  pointer-events: none;
+  animation: floatText 0.8s ease-out forwards;
+  z-index: 12;
+}
+
+@keyframes floatText {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(0) scale(0.9);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-4px) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-32px) scale(1);
+  }
+}
+/* menší mobily – bubliny lehce zmenšíme */
+@media (max-width: 480px) {
+  .bubble {
+    width: clamp(32px, 6.5vw, 64px);
+    height: clamp(32px, 6.5vw, 64px);
+  }
+}
+
+/* velké / ultraširoké obrazovky – trochu pomoct trefitelnosti */
+@media (min-width: 1600px) {
+  .bubble {
+    width: clamp(40px, 5vw, 90px);
+    height: clamp(40px, 5vw, 90px);
+  }
+}
