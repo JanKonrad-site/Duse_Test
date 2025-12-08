@@ -484,6 +484,73 @@ function spawnBubbleFragments(bubbleObj) {
     if (glow.parentNode) glow.parentNode.removeChild(glow);
   }, 500);
 }
+function createSplashColor(clientX, clientY, isSuper) {
+  if (!world) return;
+
+  const worldRect = world.getBoundingClientRect();
+  const patchSize = isSuper ? 180 : 110; // super hit je o něco větší
+
+  const patch = document.createElement('div');
+  patch.className = 'splash-color';
+  if (isSuper) patch.classList.add('splash-color-super');
+
+  // pozice v % v rámci WORLD – stejně jako šplouch
+  const xPercent = ((clientX - worldRect.left) / worldRect.width) * 100;
+  const yPercent = ((clientY - worldRect.top)  / worldRect.height) * 100;
+
+  patch.style.left  = xPercent + '%';
+  patch.style.top   = yPercent + '%';
+  patch.style.width  = patchSize + 'px';
+  patch.style.height = patchSize + 'px';
+
+  // zjistíme, přes který z obrázků jsme reálně klikli (bgImage1 / bgImage2)
+  let srcImg = null;
+  const imgCandidates = [bgImage1, bgImage2].filter(Boolean);
+
+  for (const img of imgCandidates) {
+    const r = img.getBoundingClientRect();
+    if (
+      clientX >= r.left &&
+      clientX <= r.right &&
+      clientY >= r.top &&
+      clientY <= r.bottom
+    ) {
+      srcImg = img;
+      break;
+    }
+  }
+
+  // fallback – když klikneš mimo, vezmeme prostě první obrázek
+  if (!srcImg && imgCandidates.length > 0) {
+    srcImg = imgCandidates[0];
+  }
+
+  if (srcImg && srcImg.src) {
+    const imgRect = srcImg.getBoundingClientRect();
+
+    patch.style.backgroundImage  = `url('${srcImg.src}')`;
+    patch.style.backgroundRepeat = 'no-repeat';
+    patch.style.backgroundSize   = imgRect.width + 'px ' + imgRect.height + 'px';
+
+    // souřadnice kliknutí vůči samotnému obrázku
+    const imgX = clientX - imgRect.left;
+    const imgY = clientY - imgRect.top;
+
+    // zarovnání výřezu tak, aby střed odpovídal místu kliknutí
+    const bgPosX = imgX - patchSize / 2;
+    const bgPosY = imgY - patchSize / 2;
+
+    patch.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
+  }
+
+  world.appendChild(patch);
+
+  // jemné rozplynutí – krátké, aby nerušilo pohyb pozadí
+  setTimeout(() => {
+    if (patch.parentNode) patch.parentNode.removeChild(patch);
+  }, isSuper ? 550 : 420);
+}
+
 function createSplashAtClient(clientX, clientY, isSuper) {
   if (!world) return;
 
@@ -491,32 +558,40 @@ function createSplashAtClient(clientX, clientY, isSuper) {
   const xPercent = ((clientX - rect.left) / rect.width) * 100;
   const yPercent = ((clientY - rect.top)  / rect.height) * 100;
 
-  // kruhové vlnky – “šplouch”
+  // kruhové vlnky – „šplouch“
   const splash = document.createElement('div');
-  splash.className = 'world-splash';
+  splash.className = 'splash';
   if (isSuper) {
-    splash.classList.add('world-splash-super', 'world-splash-hit');
+    splash.classList.add('splash-super', 'splash-hit');
   }
   splash.style.left = xPercent + '%';
   splash.style.top  = yPercent + '%';
   world.appendChild(splash);
 
-  // barevné okno do obrázku přesně v místě kliku
+  // *** tady přidáme barevný výřez obrázku přesně v místě kliku ***
   createSplashColor(clientX, clientY, isSuper);
 
   const createdAt = performance.now();
-  const lifeMs    = isSuper ? 550 : 450;
+  const lifeMs = isSuper ? 550 : 450;
+  const maxRadius = isSuper ? 180 : 110;
 
+  // tohle používá gameLoop pro „vlnu“, která může trefit bublinu
   activeSplashes.push({
     el: splash,
     createdAt,
-    lifeMs
+    lifeMs,
+    xPx: clientX,
+    yPx: clientY,
+    maxRadius,
+    isSuper,
+    used: false
   });
 
   setTimeout(() => {
     if (splash.parentNode) splash.parentNode.removeChild(splash);
-  }, lifeMs + 60);
+  }, lifeMs + 50);
 }
+
 
 
 function gameLoop() {
@@ -667,6 +742,72 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
     music.pause();
     endLevel('Odklikal jsi všechny kapky! 🎉');
   }
+}
+function createSplashColor(clientX, clientY, isSuper) {
+  if (!world) return;
+
+  const worldRect = world.getBoundingClientRect();
+  const patchSize = isSuper ? 180 : 110; // super zásah = větší okno
+
+  const patch = document.createElement('div');
+  patch.className = 'splash-color';
+  if (isSuper) patch.classList.add('splash-color-super');
+
+  // pozice v procentech v rámci WORLD – stejně jako šplouch
+  const xPercent = ((clientX - worldRect.left) / worldRect.width) * 100;
+  const yPercent = ((clientY - worldRect.top)  / worldRect.height) * 100;
+
+  patch.style.left  = xPercent + '%';
+  patch.style.top   = yPercent + '%';
+  patch.style.width  = patchSize + 'px';
+  patch.style.height = patchSize + 'px';
+
+  // vybereme, přes který z pozadí (bgImage1 / bgImage2) jsme klikli
+  let srcImg = null;
+  const imgCandidates = [bgImage1, bgImage2].filter(Boolean);
+
+  for (const img of imgCandidates) {
+    const r = img.getBoundingClientRect();
+    if (
+      clientX >= r.left &&
+      clientX <= r.right &&
+      clientY >= r.top &&
+      clientY <= r.bottom
+    ) {
+      srcImg = img;
+      break;
+    }
+  }
+
+  // fallback – když klikneš mimo obrázek, vezmeme prostě první
+  if (!srcImg && imgCandidates.length > 0) {
+    srcImg = imgCandidates[0];
+  }
+
+  if (srcImg && srcImg.src) {
+    const imgRect = srcImg.getBoundingClientRect();
+
+    patch.style.backgroundImage  = `url('${srcImg.src}')`;
+    patch.style.backgroundRepeat = 'no-repeat';
+    patch.style.backgroundSize   = imgRect.width + 'px ' + imgRect.height + 'px';
+
+    // souřadnice kliknutí vůči samotnému obrázku
+    const imgX = clientX - imgRect.left;
+    const imgY = clientY - imgRect.top;
+
+    // zarovnání výřezu tak, aby střed odpovídal místu kliknutí
+    const bgPosX = imgX - patchSize / 2;
+    const bgPosY = imgY - patchSize / 2;
+
+    patch.style.backgroundPosition = `-${bgPosX}px -${bgPosY}px`;
+  }
+
+  world.appendChild(patch);
+
+  // jemné rozplynutí – krátké, aby nerušilo pohyb pozadí
+  setTimeout(() => {
+    if (patch.parentNode) patch.parentNode.removeChild(patch);
+  }, isSuper ? 550 : 420);
 }
 
 function handleClickAt(clientX, clientY) {
