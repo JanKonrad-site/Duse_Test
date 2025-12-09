@@ -1,75 +1,79 @@
-// Pro jistotu: všechny buttony a odkazy bez kurzoru
-window.addEventListener('load', () => {
-  document.querySelectorAll('button, a, [role="button"], .btn')
-    .forEach(el => {
-      el.style.cursor = 'none';
-    });
-  document.body.style.cursor = 'none';
-});
+// ----------------------------------------------
+// DUŠE – hlavní herní logika (vizuální efekty)
+// Spoléhá na globální proměnné z config.js
+// ----------------------------------------------
+
 // Zákaz přetahování obrázků (ghost image při drag & drop)
 document.addEventListener('dragstart', function (e) {
   e.preventDefault();
 });
+
+// Pomocné proměnné jen pro tento soubor
+let bgProgressValue = 0;   // poslední progress pozadí (0–1)
+let comboStreak = 0;       // počet zásahů po sobě pro flash
+let flashTimeoutId = null; // timeout pro návrat z flash efektu
+
+// -------------------------------------------------
+// HUD / DUŠE
+// -------------------------------------------------
 function updateScoreHud() {
   scoreInfo.textContent = 'Skóre: ' + score;
 }
 
 function updateSoulVisual() {
-  // detekce typu pointeru – jestli je dostupná „jemná“ myš
+  // menší duše na zařízeních bez jemného pointeru (mobil / tablet)
   const hasFinePointer =
     window.matchMedia &&
     window.matchMedia('(any-pointer: fine)').matches;
 
-  // na zařízeních bez myši (mobil / tablet) uděláme duši menší
   const baseFactor = hasFinePointer ? 1.0 : 0.75;
-
   const size = SOUL_BASE_SIZE * baseFactor * soulSize;
-  soul.style.width  = size + 'px';
+
+  soul.style.width = size + 'px';
   soul.style.height = size + 'px';
   soul.style.opacity = Math.max(0, soulSize);
 }
 
-  function resetSoulParticles() {
-    if (!soulParticlesContainer) return;
-    const extras = soulParticlesContainer.querySelectorAll('.soul-extra-particle');
-    extras.forEach(el => el.remove());
-    extraSoulParticles = 0;
-  }
+function resetSoulParticles() {
+  if (!soulParticlesContainer) return;
+  const extras = soulParticlesContainer.querySelectorAll('.soul-extra-particle');
+  extras.forEach(el => el.remove());
+  extraSoulParticles = 0;
+}
 
-  function addSoulParticle() {
-    if (!soulParticlesContainer) return;
-    if (extraSoulParticles >= MAX_EXTRA_PARTICLES) return;
+function addSoulParticle() {
+  if (!soulParticlesContainer) return;
+  if (extraSoulParticles >= MAX_EXTRA_PARTICLES) return;
 
-    const dot = document.createElement('div');
-    dot.className = 'soul-extra-particle';
+  const dot = document.createElement('div');
+  dot.className = 'soul-extra-particle';
 
-    // náhodná pozice na kružnici okolo jádra
-    const angle = Math.random() * 360;
-    const radius = 18 + Math.random() * 16;
-    dot.style.setProperty('--angle', angle + 'deg');
-    dot.style.setProperty('--radius', radius + 'px');
-    dot.style.animationDelay = (Math.random() * 2).toFixed(2) + 's';
+  const angle = Math.random() * 360;
+  const radius = 18 + Math.random() * 16;
+  dot.style.setProperty('--angle', angle + 'deg');
+  dot.style.setProperty('--radius', radius + 'px');
+  dot.style.animationDelay = (Math.random() * 2).toFixed(2) + 's';
 
-    soulParticlesContainer.appendChild(dot);
-    extraSoulParticles++;
-  }
+  soulParticlesContainer.appendChild(dot);
+  extraSoulParticles++;
+}
 
-  function resetSoul() {
-    soulSize = 1.0;
-    soulX = 25;
-    soulY = 60;
-    soulWrapper.style.left = soulX + '%';
-    soulWrapper.style.top  = soulY + '%';
-    soul.classList.remove('soul-dash', 'soul-grow', 'soul-flash');
-    resetSoulParticles();
-    updateSoulVisual();
-  }
-
+function resetSoul() {
+  soulSize = 1.0;
+  soulX = 25;
+  soulY = 60;
+  soulWrapper.style.left = soulX + '%';
+  soulWrapper.style.top  = soulY + '%';
+  soul.classList.remove('soul-dash', 'soul-grow', 'soul-flash');
+  resetSoulParticles();
+  updateSoulVisual();
+}
 
 function moveSoulTo(xPercent, yPercent) {
   soulX = xPercent;
-  soulY = yPercent + 8;
+  soulY = yPercent + 8; // lehký offset, aby se nelepila přesně na kapku
   soul.classList.remove('soul-dash', 'soul-grow', 'soul-flash');
+  // reflow pro restart animace
   void soul.offsetWidth;
   soulWrapper.style.left = soulX + '%';
   soulWrapper.style.top  = soulY + '%';
@@ -88,10 +92,14 @@ function showFloatingScore(text, xPercent, yPercent) {
   }, 900);
 }
 
+// -------------------------------------------------
+// LEVELY + PATTERN
+// -------------------------------------------------
 function loadLevelAssets() {
   const lvl = levels[currentLevelKey];
   if (!lvl) return;
   scrollTrack.style.opacity = 0;
+  scrollTrack.style.filter = 'grayscale(1)';
   bgImage1.src = lvl.image;
   bgImage2.src = lvl.image;
   music.src    = lvl.music;
@@ -133,15 +141,15 @@ function buildPatternForMusic() {
   const startTravelFactor = 1.1;
   const endTravelFactor   = 0.6;
 
-  const window = durationSec - startOffset - endReserve - BASE_TRAVEL_TIME_SEC;
-  if (window <= 0) {
+  const windowSec = durationSec - startOffset - endReserve - BASE_TRAVEL_TIME_SEC;
+  if (windowSec <= 0) {
     pattern = createPattern(20, BUBBLE_INTERVAL_SEC);
     totalScheduled = pattern.length;
     return;
   }
 
   const avgInterval = (startInterval + endInterval) / 2;
-  let count = Math.floor(window / avgInterval);
+  let count = Math.floor(windowSec / avgInterval);
   if (count < 5) count = 5;
 
   const newPattern = [];
@@ -168,28 +176,106 @@ function buildPatternForMusic() {
   totalScheduled = pattern.length;
 }
 
+// -------------------------------------------------
+// POZADÍ – černá → šedá → barevná + FLASH
+// -------------------------------------------------
 function updateBackgroundProgress(progress) {
   const p = Math.max(0, Math.min(1, progress));
+  bgProgressValue = p;
+
+  // 0: zcela černá – skryjeme obrázek
+  if (p === 0) {
+    scrollTrack.style.opacity = 0;
+    scrollTrack.style.filter  = 'grayscale(1)';
+    return;
+  }
+
   let opacity, grayscale;
 
+  // 0–0.5: černá → šedá (obrázek postupně vystupuje, ale je šedý)
   if (p < 0.5) {
-    const phase = p / 0.5;
-    opacity = 0.1 + 0.9 * phase;
-    grayscale = 1;
+    const phase = p / 0.5;       // 0→1
+    opacity = phase;             // 0→1
+    grayscale = 1;               // stále šedý
   } else {
-    const phase = (p - 0.5) / 0.5;
+    // 0.5–1: šedá → barevná
+    const phase = (p - 0.5) / 0.5; // 0→1
     opacity = 1;
-    grayscale = 1 - phase;
+    grayscale = 1 - phase;        // 1→0
   }
 
   scrollTrack.style.opacity = opacity;
-  scrollTrack.style.filter = `grayscale(${grayscale})`;
+  scrollTrack.style.filter  = `grayscale(${grayscale})`;
 }
 
+// krátký flash – délka a síla podle tieru (5, 10, 15…)
+function triggerComboFlash(tier) {
+  if (!scrollTrack) return;
+
+  // zruš případný předchozí timeout
+  if (flashTimeoutId !== null) {
+    clearTimeout(flashTimeoutId);
+    flashTimeoutId = null;
+  }
+
+  // tier = 1 pro 5 zásahů, 2 pro 10, atd. – omezíme, aby to neulítlo
+  const cappedTier = Math.min(tier, 20);
+  const strength = 1.0 + cappedTier * 0.12;  // 1.0–3.4
+  const duration = 200 + cappedTier * 40;    // 240–1000 ms
+
+  scrollTrack.style.setProperty('--flashStrength', strength.toFixed(2));
+  scrollTrack.classList.add('flash-fullcolor');
+
+  flashTimeoutId = window.setTimeout(() => {
+    scrollTrack.classList.remove('flash-fullcolor');
+    // návrat do stavu podle aktuálního progresu
+    updateBackgroundProgress(bgProgressValue);
+    flashTimeoutId = null;
+  }, duration);
+}
+
+// lokální barevný „šplouch“ kolem zásahu bubliny – rozplývání barvy
+function spawnColorBurst(centerX, centerY, strength) {
+  const rectWorld = world.getBoundingClientRect();
+  const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
+  const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
+
+  const burst = document.createElement('div');
+  burst.className = 'color-burst';
+  burst.style.left = xPercent + '%';
+  burst.style.top  = yPercent + '%';
+
+  const scale = 1.0 + (strength || 0) * 0.4;
+  burst.style.setProperty('--burst-scale', scale.toFixed(2));
+
+  world.appendChild(burst);
+
+  setTimeout(() => {
+    if (burst.parentNode) burst.parentNode.removeChild(burst);
+  }, 700);
+}
+
+// vizuální pop-up pro combo bonus
+function showComboPopup(comboValue, bonus) {
+  const popup = document.createElement('div');
+  popup.className = 'combo-popup';
+  popup.innerHTML = `COMBO <span>x${comboValue}</span> +${bonus}`;
+  world.appendChild(popup);
+
+  setTimeout(() => {
+    if (popup.parentNode) popup.parentNode.removeChild(popup);
+  }, 900);
+}
+
+// -------------------------------------------------
+// MISS / RESET
+// -------------------------------------------------
 function registerMiss() {
   if (!levelRunning) return;
 
   misses++;
+  comboStreak = 0; // přerušíme combo
+
   soulSize = Math.max(0, soulSize - SOUL_SHRINK_PER_MISS);
   updateSoulVisual();
 
@@ -202,7 +288,7 @@ function registerMiss() {
 
 function resetScrollTrackAnimation() {
   scrollTrack.style.animation = 'none';
-  void scrollTrack.offsetWidth;
+  void scrollTrack.offsetWidth; // reflow
   scrollTrack.style.animation = '';
 }
 
@@ -241,6 +327,7 @@ function resetLevelState() {
   misses = 0;
   gameOverBySoul = false;
   score = 0;
+  comboStreak = 0;
   updateScoreHud();
   statsEl.textContent = '';
   statusText.textContent = '';
@@ -249,6 +336,9 @@ function resetLevelState() {
   resetSoul();
 }
 
+// -------------------------------------------------
+// MENU / PŘECHODY
+// -------------------------------------------------
 function showMenuScreen() {
   music.pause();
   menuScreen.classList.remove('hidden');
@@ -270,6 +360,9 @@ function goToLevel(key) {
   showLevelIntro();
 }
 
+// -------------------------------------------------
+// KONEC LEVELU
+// -------------------------------------------------
 function endLevel(reason = 'Level je u konce.') {
   if (!levelRunning) return;
   levelRunning = false;
@@ -306,6 +399,9 @@ function endLevel(reason = 'Level je u konce.') {
   playAgainBtn.disabled = false;
 }
 
+// -------------------------------------------------
+// SPAWN BUBLIN
+// -------------------------------------------------
 function spawnBubbleAt(yPercent, travelTimeSec) {
   if (!levelRunning) return;
 
@@ -375,6 +471,9 @@ function schedulePattern() {
   }
 }
 
+// -------------------------------------------------
+// START LEVELU
+// -------------------------------------------------
 function startLevel() {
   resetLevelState();
   levelIntroOverlay.classList.add('overlay-hidden');
@@ -398,6 +497,9 @@ function startLevel() {
   schedulePattern();
 }
 
+// -------------------------------------------------
+// ŠPLOUCHNUTÍ A FRAGMENTY
+// -------------------------------------------------
 function createSplashAtClient(clientX, clientY, isSuper) {
   const rect = world.getBoundingClientRect();
   const xPercent = ((clientX - rect.left) / rect.width) * 100;
@@ -427,9 +529,10 @@ function createSplashAtClient(clientX, clientY, isSuper) {
 
   setTimeout(() => {
     if (splash.parentNode) splash.parentNode.removeChild(splash);
-  }, lifeMs + 100);
+  }, lifeMs + 120);
 }
 
+// světlý glow kolem bubliny
 function spawnBubbleFragments(bubbleObj) {
   const rectWorld  = world.getBoundingClientRect();
   const rectBubble = bubbleObj.el.getBoundingClientRect();
@@ -450,6 +553,9 @@ function spawnBubbleFragments(bubbleObj) {
   }, 500);
 }
 
+// -------------------------------------------------
+// GAME LOOP
+// -------------------------------------------------
 function gameLoop() {
   const now = performance.now();
   if (!lastFrameTime) lastFrameTime = now;
@@ -484,6 +590,7 @@ function gameLoop() {
     bubbles = stillAlive;
   }
 
+  // šplouchání – expandující kruh, který může trefit bublinu
   activeSplashes = activeSplashes.filter(s => {
     const age = now - s.createdAt;
     if (age > s.lifeMs) return false;
@@ -519,11 +626,15 @@ function gameLoop() {
 
 requestAnimationFrame(gameLoop);
 
+// -------------------------------------------------
+// ZÁSAH BUBLINY
+// -------------------------------------------------
 function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   if (!levelRunning) return;
   if (!bubbleObj || bubbleObj.hit || bubbleObj.missed) return;
 
   hits++;
+  comboStreak++; // zásah do comba
 
   const rectWorld  = world.getBoundingClientRect();
   const rectBubble = bubbleObj.el.getBoundingClientRect();
@@ -532,7 +643,9 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
   const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
 
+  // glow + barevná vlna, která se rozplývá
   spawnBubbleFragments(bubbleObj);
+  spawnColorBurst(centerX, centerY, isSuper ? 1.2 : 1.0);
 
   bubbleObj.hit = true;
   bubbleObj.el.classList.add('bubble-pop');
@@ -548,10 +661,9 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   void soul.offsetWidth;
   soul.classList.add('soul-grow', 'soul-flash');
   updateSoulVisual();
-      // Přidáme další částici do duše – vizuálně se „naplňuje“
-    addSoulParticle();
+  addSoulParticle();
 
-
+  // timing bonus
   const normX = (centerX - rectWorld.left) / rectWorld.width;
   let zone = Math.floor(normX * 4);
   if (zone < 0) zone = 0;
@@ -569,9 +681,21 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   }
 
   const basePoints = 1;
-  const gained = basePoints + timingBonus + precisionBonus;
-  score += gained;
-  updateScoreHud();
+  let gained = basePoints + timingBonus + precisionBonus;
+
+  // COMBO bonus: každých 5 zásahů v řadě → +10 bodů + flash
+  if (comboStreak > 0 && comboStreak % 5 === 0) {
+    const tier = Math.floor(comboStreak / 5); // 1, 2, 3… pro 5, 10, 15…
+    const comboBonus = 10;
+    gained += comboBonus;        // přičteme k tomuto zásahu
+    score += gained;
+    updateScoreHud();
+    triggerComboFlash(tier);
+    showComboPopup(comboStreak, comboBonus);
+  } else {
+    score += gained;
+    updateScoreHud();
+  }
 
   statusText.textContent = `Zásah: +${gained} (čas +${timingBonus}, přesnost +${precisionBonus})`;
   showFloatingScore('+' + gained, soulX, soulY - 6);
@@ -585,6 +709,9 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   }
 }
 
+// -------------------------------------------------
+// KLIK DO SVĚTA
+// -------------------------------------------------
 function handleClickAt(clientX, clientY) {
   if (!levelRunning) return;
   if (!bubbles.length) return;
@@ -611,22 +738,29 @@ function handleClickAt(clientX, clientY) {
 
   if (directHit) {
     handleBubbleHit(target, true, clientX, clientY);
+  } else {
+    // klik mimo → combo reset
+    comboStreak = 0;
   }
 }
 
-world.addEventListener('pointerdown', (e) => {
+world.addEventListener('pointerdown', e => {
   handleClickAt(e.clientX, e.clientY);
 });
-// === CUSTOM CURSOR LIGHT ===
+
+// -------------------------------------------------
+// CUSTOM CURSOR LIGHT – jen vizuál, kurzor řeší CSS
+// -------------------------------------------------
 const cursorLight = document.getElementById('cursorLight');
 
-window.addEventListener('mousemove', (e) => {
-  cursorLight.style.left = e.clientX + 'px';
-  cursorLight.style.top = e.clientY + 'px';
-});
+if (cursorLight) {
+  window.addEventListener('mousemove', e => {
+    cursorLight.style.left = e.clientX + 'px';
+    cursorLight.style.top  = e.clientY + 'px';
+  });
 
-// Záblesk při kliknutí
-window.addEventListener('pointerdown', () => {
-  cursorLight.classList.add('click');
-  setTimeout(() => cursorLight.classList.remove('click'), 120);
-});
+  window.addEventListener('pointerdown', () => {
+    cursorLight.classList.add('click');
+    setTimeout(() => cursorLight.classList.remove('click'), 120);
+  });
+}

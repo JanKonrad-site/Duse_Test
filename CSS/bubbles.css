@@ -116,6 +116,36 @@
   }
 }
 
+/* Barevné „okno“ do pozadí pod šplouchnutím */
+.splash-color {
+  position: absolute;
+  pointer-events: none;
+  z-index: 7;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0;
+  animation: splashColor 0.45s ease-out forwards;
+}
+
+.splash-color-super {
+  /* větší patch pro zásah bubliny – velikost řeší JS (patchSize) */
+  transform-origin: center;
+}
+
+@keyframes splashColor {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+}
+
 /* Text skóre */
 
 .float-text {
@@ -148,6 +178,7 @@
     transform: translate(-50%, -50%) translateY(-32px) scale(1);
   }
 }
+
 /* menší mobily – bubliny lehce zmenšíme */
 @media (max-width: 480px) {
   .bubble {
