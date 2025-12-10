@@ -234,8 +234,14 @@ function triggerComboFlash(tier) {
   }, duration);
 }
 
-// lokální barevný „šplouch“ kolem zásahu bubliny – rozplývání barvy
+// -------------------------------------------------
+// LOKÁLNÍ RIPPLE – barevná vlna v místě zásahu
+// -------------------------------------------------
+// řízený podle síly zásahu a aktuálního bgProgressValue
+// -> na začátku levelu výrazný, na konci už jen jemný
 function spawnColorBurst(centerX, centerY, strength) {
+  if (!world) return;
+
   const rectWorld = world.getBoundingClientRect();
   const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
   const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
@@ -245,11 +251,39 @@ function spawnColorBurst(centerX, centerY, strength) {
   burst.style.left = xPercent + '%';
   burst.style.top  = yPercent + '%';
 
-  const scale = 1.0 + (strength || 0) * 0.4;
-  burst.style.setProperty('--burst-scale', scale.toFixed(2));
+  // normalizace síly zásahu (super / normální hit)
+  const s = Math.max(0, strength || 0);
+  const sNorm = Math.min(1, s / 1.2);
+
+  // jak moc už je obrázek vybarvený (0 = černá/šedá, 1 = barevný)
+  const p = Math.max(0, Math.min(1, bgProgressValue || 0));
+
+  // intensity:
+  //  - 1.0 na začátku levelu (p≈0)
+  //  - 0.2 na konci (p≈1)
+  const intensity = 0.2 + 0.8 * (1 - p);
+
+  // saturace:
+  //  - výrazná na začátku (fake barva v šedi)
+  //  - jemná na konci (už barevný obraz → jen lehké zvýraznění)
+  const baseSat  = 1.0;
+  const sat      = baseSat
+                 + 2.2 * intensity        // hlavní vliv podle progressu
+                 + 0.4 * sNorm * intensity; // lehce silnější u super zásahů
+
+  // jas – ještě jemnější než saturace, aby to nespálilo obraz
+  const baseBright = 1.0;
+  const bright     = baseBright
+                   + 0.35 * intensity
+                   + 0.25 * sNorm * intensity;
+
+  // hodnoty pošleme do CSS proměnných (viz .color-burst v game.css)
+  burst.style.setProperty('--burst-saturate', sat.toFixed(2));
+  burst.style.setProperty('--burst-bright',   bright.toFixed(2));
 
   world.appendChild(burst);
 
+  // životnost kruhu – musí být delší než animace v CSS (0.65s)
   setTimeout(() => {
     if (burst.parentNode) burst.parentNode.removeChild(burst);
   }, 700);
