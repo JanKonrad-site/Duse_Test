@@ -236,7 +236,6 @@
   grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
   gap: 40px;
   padding: 36px 0;
-  /* žádné pozadí, žádný border, žádný box-shadow – jen text „ponořený“ do scény */
   background: transparent;
   border: none;
   box-shadow: none;
@@ -373,7 +372,7 @@
   display: flex;
 }
 
-/* Hero level – jen lehké podbarvení, žádný „panel rámeček“ */
+/* Hero level */
 
 .hero-level {
   margin-top: 18px;
@@ -441,6 +440,12 @@
   opacity: 0.6;
 }
 
+.level-price {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
 /* Jak hrát – list */
 
 .howto-list {
@@ -460,43 +465,6 @@
   opacity: 0.82;
   margin-top: 12px;
   text-align: left;
-}
-
-/* -------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
-
-@media (max-width: 900px) {
-  .main-menu-panel {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 28px 0;
-    gap: 26px;
-  }
-
-  .main-menu-nav {
-    border-right: none;
-    border-bottom: 1px solid rgba(120, 200, 255, 0.35);
-    padding-right: 0;
-    padding-bottom: 14px;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .game-logo {
-    font-size: 22px;
-    letter-spacing: 0.26em;
-  }
-
-  .menu-links {
-    flex-direction: row;
-    gap: 16px;
-    margin-top: 0;
-  }
-
-  .menu-link::before {
-    bottom: -2px;
-  }
 }
 
 /* -------------------------------------------------
@@ -751,107 +719,185 @@
   line-height: 1.4;
 }
 
-/* Responsivní – na menších šířkách pod sebe */
+/* -------------------------------------------------
+   HRÁČ – nastavení & měna
+-------------------------------------------------- */
+
+.player-balance {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(120, 200, 255, 0.4);
+  background:
+    radial-gradient(circle at top left, rgba(0, 200, 255, 0.08), transparent 60%),
+    rgba(5, 8, 18, 0.9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.player-balance-value {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.player-settings-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+  gap: 24px;
+}
+
+.player-settings-column h3 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.player-settings-help {
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 0 0 8px 0;
+}
+
+.player-field span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
+.player-field select {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 200, 255, 0.5);
+  background: rgba(3, 6, 14, 0.9);
+  color: #eaf4ff;
+  font-size: 13px;
+}
+
+.player-ambient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ambient-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.ambient-item input[type="checkbox"] {
+  accent-color: #00c8ff;
+}
+
+.player-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-settings-status {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.saved-visual-card {
+  margin-top: 20px;
+  padding: 12px 14px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(120, 200, 255, 0.4);
+  background:
+    radial-gradient(circle at bottom right, rgba(138, 91, 255, 0.12), transparent 60%),
+    rgba(5, 8, 18, 0.9);
+  font-size: 13px;
+}
+
+.saved-visual-card h3 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.saved-visual-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+/* -------------------------------------------------
+   Výsledkový overlay – měna + akce
+-------------------------------------------------- */
+
+.currency-info {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.result-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* -------------------------------------------------
+   RESPONSIVE
+-------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .main-menu-panel {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 28px 0;
+    gap: 26px;
+  }
+
+  .main-menu-nav {
+    border-right: none;
+    border-bottom: 1px solid rgba(120, 200, 255, 0.35);
+    padding-right: 0;
+    padding-bottom: 14px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .game-logo {
+    font-size: 22px;
+    letter-spacing: 0.26em;
+  }
+
+  .menu-links {
+    flex-direction: row;
+    gap: 16px;
+    margin-top: 0;
+  }
+
+  .menu-link::before {
+    bottom: -2px;
+  }
+}
 
 @media (max-width: 720px) {
   .tutorial-layout {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-/* -------------------------------------------------
-   MENU – responzivní layout / typografie
--------------------------------------------------- */
 
-/* tablety + menší notebooky */
-@media (max-width: 1200px) {
-  .menu-inner,
-  .menu-layout,
-  .menu-content {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-  }
-
-  .menu-left {
-    flex: 0 0 220px;
-  }
-
-  .menu-right {
-    flex: 1 1 auto;
-  }
-
-  .menu-levels-grid,
-  .levels-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* mobily / úzké zobrazení – menu pod sebe */
-@media (max-width: 768px) {
-  .menu-inner,
-  .menu-layout,
-  .menu-content {
-    flex-direction: column;
-    padding: 16px;
-    gap: 14px;
-  }
-
-  .menu-left,
-  .menu-right {
-    width: 100%;
-    max-width: none;
-  }
-
-  .menu-left {
-    order: 1;
-  }
-
-  .menu-right {
-    order: 2;
-    overflow: auto;
-    max-height: calc(100vh - 150px);
-  }
-
-  .menu-title {
-    font-size: 1.2rem;
-  }
-
-  .menu-subtitle,
-  .menu-tagline {
-    font-size: 0.85rem;
-  }
-
-  .menu-nav {
-    display: flex;
-    gap: 8px;
-  }
-
-  .menu-nav button {
-    flex: 1 1 0;
-    padding-block: 0.45rem;
-    font-size: 0.8rem;
-  }
-
-  .menu-levels-grid,
-  .levels-grid {
+  .player-settings-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* velké / ultraširoké obrazovky – víc karet vedle sebe */
-@media (min-width: 1600px) {
-  .menu-levels-grid,
-  .levels-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-/* -------------------------------------------------
-   MENU – mobilní scroll a layout
--------------------------------------------------- */
-
 /* menší šířky – mobil / menší tablet */
 @media (max-width: 900px) {
-  /* dovolíme, aby se obsah menu dal vertikálně scrolovat */
   .menu-screen {
     overflow-y: auto;
     overflow-x: hidden;
@@ -864,7 +910,6 @@
     padding-block: 20px;
   }
 
-  /* hlavní panel už nebude 2-sloupcová grid, ale jeden sloupec pod sebou */
   .main-menu-panel {
     display: flex;
     flex-direction: column;
@@ -874,7 +919,6 @@
     padding: 20px 0;
   }
 
-  /* levý sloupec (logo + záložky) se překlopí nahoru, nad obsah */
   .main-menu-nav {
     border-right: none;
     border-bottom: 1px solid rgba(120, 200, 255, 0.35);
@@ -906,7 +950,6 @@
     padding: 6px 10px;
   }
 
-  /* pravý sloupec – obsah */
   .main-menu-content {
     gap: 16px;
   }
@@ -974,4 +1017,3 @@
     font-size: 12px;
   }
 }
-
