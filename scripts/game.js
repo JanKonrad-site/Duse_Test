@@ -12,6 +12,7 @@ document.addEventListener('dragstart', function (e) {
 let bgProgressValue = 0;   // poslední progress pozadí (0–1)
 let comboStreak = 0;       // počet zásahů po sobě pro flash
 let flashTimeoutId = null; // timeout pro návrat z flash efektu
+let isFlashActive = false; // právě probíhá full-screen flash?
 
 // -------------------------------------------------
 // HUD / DUŠE
@@ -208,6 +209,13 @@ function updateBackgroundProgress(progress) {
   scrollTrack.style.filter  = `grayscale(${grayscale})`;
 }
 
+// smaže všechny existující barevné výseče (color-burst)
+function clearAllColorBursts() {
+  if (!world) return;
+  const bursts = world.querySelectorAll('.color-burst');
+  bursts.forEach(b => b.remove());
+}
+
 // krátký flash – délka a síla podle tieru (5, 10, 15…)
 function triggerComboFlash(tier) {
   if (!scrollTrack) return;
@@ -223,6 +231,12 @@ function triggerComboFlash(tier) {
   const strength = 1.0 + cappedTier * 0.12;  // 1.0–3.4
   const duration = 200 + cappedTier * 40;    // 240–1000 ms
 
+  isFlashActive = true;
+
+  // při startu flash efektu okamžitě smažeme všechny lokální výseče,
+  // aby se už nemohly „rozsvítit“ přes backdrop-filter
+  clearAllColorBursts();
+
   scrollTrack.style.setProperty('--flashStrength', strength.toFixed(2));
   scrollTrack.classList.add('flash-fullcolor');
 
@@ -230,6 +244,7 @@ function triggerComboFlash(tier) {
     scrollTrack.classList.remove('flash-fullcolor');
     // návrat do stavu podle aktuálního progresu
     updateBackgroundProgress(bgProgressValue);
+    isFlashActive = false;
     flashTimeoutId = null;
   }, duration);
 }
@@ -237,10 +252,13 @@ function triggerComboFlash(tier) {
 // -------------------------------------------------
 // LOKÁLNÍ RIPPLE – barevná vlna v místě zásahu
 // -------------------------------------------------
-// řízený podle síly zásahu a aktuálního bgProgressValue
-// -> na začátku levelu výrazný, na konci už jen jemný
 function spawnColorBurst(centerX, centerY, strength) {
   if (!world) return;
+
+  // pokud právě jede full-screen flash, lokální výseč vůbec nespouštěj
+  if (isFlashActive) {
+    return;
+  }
 
   const rectWorld = world.getBoundingClientRect();
   const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
@@ -255,35 +273,34 @@ function spawnColorBurst(centerX, centerY, strength) {
   const s = Math.max(0, strength || 0);
   const sNorm = Math.min(1, s / 1.2);
 
-  // jak moc už je obrázek vybarvený (0 = černá/šedá, 1 = barevný)
+  // jak moc už je obrázek vybarvený (0 = černá/šedá, 1 = plná barva)
   const p = Math.max(0, Math.min(1, bgProgressValue || 0));
 
-  // intensity:
-  //  - 1.0 na začátku levelu (p≈0)
-  //  - 0.2 na konci (p≈1)
-  const intensity = 0.2 + 0.8 * (1 - p);
+  // základní intenzita podle progresu:
+  //  - p = 0   -> intensity = 1   (max WOW)
+  //  - p = 1   -> intensity = 0   (mizí)
+  let intensity = Math.pow(1 - p, 1.2);
 
-  // saturace:
-  //  - výrazná na začátku (fake barva v šedi)
-  //  - jemná na konci (už barevný obraz → jen lehké zvýraznění)
-  const baseSat  = 1.0;
-  const sat      = baseSat
-                 + 2.2 * intensity        // hlavní vliv podle progressu
-                 + 0.4 * sNorm * intensity; // lehce silnější u super zásahů
+  // saturace – čím větší intensity, tím víc barvy
+  const baseSat = 1.0;
+  const sat =
+    baseSat +
+    3.0 * intensity +
+    0.7 * sNorm * intensity;
 
-  // jas – ještě jemnější než saturace, aby to nespálilo obraz
+  // jas – opatrnější, ať nespálíme barvy
   const baseBright = 1.0;
-  const bright     = baseBright
-                   + 0.35 * intensity
-                   + 0.25 * sNorm * intensity;
+  const bright =
+    baseBright +
+    0.6 * intensity +
+    0.3 * sNorm * intensity;
 
-  // hodnoty pošleme do CSS proměnných (viz .color-burst v game.css)
+  // hodnoty pro CSS (viz .color-burst v game.css)
   burst.style.setProperty('--burst-saturate', sat.toFixed(2));
   burst.style.setProperty('--burst-bright',   bright.toFixed(2));
 
   world.appendChild(burst);
 
-  // životnost kruhu – musí být delší než animace v CSS (0.65s)
   setTimeout(() => {
     if (burst.parentNode) burst.parentNode.removeChild(burst);
   }, 700);

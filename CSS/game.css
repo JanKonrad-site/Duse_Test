@@ -387,7 +387,8 @@
 
 .intro-start:hover {
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 0 18px rgba(255, 255, 255, 0.18);
   transform: translateY(-1px);
 }
 
@@ -730,8 +731,7 @@ a,
 }
 
 /* -------------------------------------------------
-   Lokální ripple – fake okno, které vytáhne barvu obrázku
-   Síla efektu je řízená z JS přes CSS proměnné
+   Lokální ripple – okno, které vytáhne barvu obrázku
 -------------------------------------------------- */
 .color-burst {
   position: absolute;
@@ -740,27 +740,30 @@ a,
   border-radius: 50%;
   pointer-events: none;
 
-  /* start v menší velikosti – animace ho roztáhne */
+  /* start v menší velikosti – animace to zvětší */
   transform: translate(-50%, -50%) scale(0.6);
 
-  /* žádná vlastní barva, jen jemný přechod pro prstenec */
+  /* jemný světlý prstenec, ne vlastní barva */
   background:
     radial-gradient(circle at 50% 50%,
-      rgba(255, 255, 255, 0)     0%,
-      rgba(255, 255, 255, 0)    40%,
+      rgba(255, 255, 255, 0)    0%,
+      rgba(255, 255, 255, 0)   40%,
       rgba(255, 255, 255, 0.18) 60%,
-      rgba(255, 255, 255, 0.0) 100%
+      rgba(255, 255, 255, 0)   100%
     );
 
-  /* barvu NEfixujeme napevno – řídí ji JS */
+  /* “vytahuje” barvu pod kruhem */
   backdrop-filter:
-    saturate(var(--burst-saturate, 1))
-    brightness(var(--burst-bright, 1));
+    saturate(var(--burst-saturate, 1.9))
+    brightness(var(--burst-bright, 1.1));
 
   mix-blend-mode: color-dodge;
+
   opacity: 1;
   animation: colorBurstRipple 0.65s ease-out forwards;
-  z-index: 7;
+
+  /* KLÍČOVÉ – pod duší (z-index 5), ale nad pozadím (1) */
+  z-index: 3;
 }
 
 @keyframes colorBurstRipple {
@@ -777,7 +780,3 @@ a,
     opacity: 0;
   }
 }
-
-
-
-
