@@ -257,7 +257,6 @@
           </div>
         </div>
       </div>
-
     </div>
 
     <!-- TEMPLATE bubliny -->
@@ -267,12 +266,15 @@
       <button id="restartBtn" class="btn">Restart</button>
       <button id="backToMenuInHud" class="btn">Menu</button>
       <button id="muteBtn" class="btn">Mute</button>
+      <!-- POZOR: tady už NENÍ id="playPauseBtn", jen obyčejné tlačítko
+           Play/pause ovládáme kulatým tlačítkem u waveformy -->
+      <button class="btn">❚❚</button>
 
       <!-- timeline / název skladby – waveform -->
       <div id="timeInfo">
-        ♪ Maják 
+        ♪ Maják
         <div class="waveform-wrap">
-          <!-- tlačítko play/pause -->
+          <!-- tlačítko play/pause – JEDINÉ s id="playPauseBtn" -->
           <button id="playPauseBtn" class="track-btn">❚❚</button>
 
           <!-- šedé pozadí waveformy -->
@@ -356,8 +358,6 @@
 
   <audio id="music" preload="auto"></audio>
 
-  <script src="./scripts/config.js"></script>
-  <script src="./scripts/game.js"></script>
-  <script src="./scripts/ui.js"></script>
+  <script src="./scripts/duse.js"></script>
 </body>
 </html>

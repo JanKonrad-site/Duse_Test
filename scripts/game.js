@@ -9,7 +9,7 @@ document.addEventListener('dragstart', function (e) {
 });
 
 // Pomocné proměnné jen pro tento soubor
-let bgProgressValue = 0;   // poslední progress pozadí (0–1)
+// removed duplicate bgProgressValue = 0;   // poslední progress pozadí (0–1)
 let comboStreak = 0;       // počet zásahů po sobě pro flash
 let flashTimeoutId = null; // timeout pro návrat z flash efektu
 let isFlashActive = false; // právě probíhá full-screen flash?
