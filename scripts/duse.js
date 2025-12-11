@@ -1,134 +1,327 @@
-// ----------------------------------------------
-// DUŠE – jedno-souborová verze (config + game + UI + monetizace)
-// Vzniklo sloučením původních config.js, game.js a ui.js
-// ----------------------------------------------
+// -------------------------------------------------
+// DUŠE – jedno-souborová verze (game + UI + monetizace)
+// -------------------------------------------------
 
-// DOM prvky
+// ------------------------ DOM PRVKY ----------------------------
+
+// Hlavní obrazovky
 const menuScreen   = document.getElementById('menuScreen');
 const gameScreen   = document.getElementById('gameScreen');
 
+// Levé menu
 const menuNewGame  = document.getElementById('menuNewGame');
 const menuLevels   = document.getElementById('menuLevels');
 const menuHowTo    = document.getElementById('menuHowTo');
+const menuPlayer   = document.getElementById('menuPlayer');
+
+// Tlačítka v menu
 const playMajakFromMenu = document.getElementById('playMajakFromMenu');
 
-const startBtn      = document.getElementById('startBtn');
-const playAgainBtn  = document.getElementById('playAgainBtn');
-const restartBtn    = document.getElementById('restartBtn');
-const muteBtn       = document.getElementById('muteBtn');
+// HUD / overlaye
+const levelIntroOverlay = document.getElementById('levelIntroOverlay');
+const resultOverlay     = document.getElementById('resultOverlay');
+
+const startBtn          = document.getElementById('startBtn');
+const playAgainBtn      = document.getElementById('playAgainBtn');
+const restartBtn        = document.getElementById('restartBtn');
+const muteBtn           = document.getElementById('muteBtn');
+
 const backToMenuFromIntro  = document.getElementById('backToMenuFromIntro');
 const backToMenuFromResult = document.getElementById('backToMenuFromResult');
 const backToMenuInHud      = document.getElementById('backToMenuInHud');
 
-const statusText    = document.getElementById('statusText');
-const statsEl       = document.getElementById('stats');
-const resultStatsEl = document.getElementById('resultStats');
+const statusText       = document.getElementById('statusText');
+const statsEl          = document.getElementById('stats');
+const resultStatsEl    = document.getElementById('resultStats');
+const imageStatus      = document.getElementById('imageStatus');
 
-const world         = document.getElementById('world');
-const bubbleTemplate = document.getElementById('bubbleTemplate');
-const scrollTrack   = document.getElementById('scrollTrack');
+const timeInfo         = document.getElementById('timeInfo');
+const scoreInfo        = document.getElementById('scoreInfo');
 
-const bgImage1      = document.getElementById('bgImage1');
-const bgImage2      = document.getElementById('bgImage2');
-const imageStatus   = document.getElementById('imageStatus');
+const world            = document.getElementById('world');
+const scrollTrack      = document.getElementById('scrollTrack');
+const bgImage1         = document.getElementById('bgImage1');
+const bgImage2         = document.getElementById('bgImage2');
 
-const timeInfo      = document.getElementById('timeInfo');
-const scoreInfo     = document.getElementById('scoreInfo');
-
-const levelIntroOverlay = document.getElementById('levelIntroOverlay');
-const resultOverlay     = document.getElementById('resultOverlay');
-
-const music        = document.getElementById('music');
-
-const soulWrapper  = document.getElementById('soulWrapper');
-const soul         = document.getElementById('soul');
+const soulWrapper      = document.getElementById('soulWrapper');
+const soul             = document.getElementById('soul');
 const soulParticlesContainer = document.getElementById('soul');
 
+const bubbleTemplate   = document.getElementById('bubbleTemplate');
+
+const cursorLight      = document.getElementById('cursorLight');
+const music            = document.getElementById('music');
+
+// Jméno aktuálního levelu (více míst v UI)
 const currentLevelNameEls =
   document.querySelectorAll('[data-current-level-name]');
 
-const cursorLight  = document.getElementById('cursorLight');
+// Sekce vpravo v menu
+const menuSections = document.querySelectorAll('.menu-section');
 
-// -------------------------------------------------
-// Konstanty
-// -------------------------------------------------
+// Tlačítko pauzy – ale logicky ho NEPOUŽIJEME (aby se nedalo cheatovat)
+const playPauseBtn = document.getElementById('playPauseBtn');
+if (playPauseBtn) {
+  // Buď ho můžeš schovat:
+  playPauseBtn.style.display = 'none';
+}
+
+// --------------------- HRÁČ / MONETIZACE -----------------------
+
+const currencyValueEl          = document.getElementById('currencyValue');
+const flashEffectSelect        = document.getElementById('flashEffectSelect');
+const ambientGlowCheckbox      = document.getElementById('ambientGlow');
+const ambientShockwaveCheckbox = document.getElementById('ambientShockwave');
+const ambientParticlesCheckbox = document.getElementById('ambientParticles');
+const ambientSaturateCheckbox  = document.getElementById('ambientSaturate');
+
+const savedVisualText          = document.getElementById('savedVisualText');
+const replaySavedVisualBtn     = document.getElementById('replaySavedVisualBtn');
+const clearSavedVisualBtn      = document.getElementById('clearSavedVisualBtn');
+const savePlayerSettingsBtn    = document.getElementById('savePlayerSettingsBtn');
+const playerSettingsStatus     = document.getElementById('playerSettingsStatus');
+
+const saveVisualBtn            = document.getElementById('saveVisualBtn');
+const currencyInfoEl           = document.getElementById('currencyInfo');
+
+// Shrnutí posledního dohraného levelu
+let lastRunSummary = null;
+
+// ------------------------- KONSTANTY ---------------------------
 
 // Soul (hráč)
-const SOUL_BASE_SIZE       = 80;    // základní velikost (px)
-const SOUL_MAX_SIZE        = 1.6;   // maximální násobek velikosti duše
-const SOUL_MIN_SIZE        = 0.25;  // minimální velikost (při 0 game over)
-const SOUL_GROW_PER_HIT    = 0.05;  // o kolik se zvětší při zásahu
-const SOUL_SHRINK_PER_MISS = 0.08;  // o kolik se zmenší při minutí
+const SOUL_BASE_SIZE       = 80;
+const SOUL_MAX_SIZE        = 1.6;
+const SOUL_MIN_SIZE        = 0.25;
+const SOUL_GROW_PER_HIT    = 0.05;
+const SOUL_SHRINK_PER_MISS = 0.08;
 
 // Bubliny
-const BUBBLE_START_X       = 88;    // kde se bublina objeví (v % šířky)
-const BUBBLE_END_X         = 14;    // hranice, při které se počítá jako minutá
-const BASE_TRAVEL_TIME_SEC = 3.2;   // základní čas cesty bubliny z prava do leva
-const BUBBLE_INTERVAL_SEC  = 1.2;   // fallback interval, když neznáme délku hudby
+const BUBBLE_START_X       = 110;
+const BUBBLE_END_X         = -10;
+const BASE_TRAVEL_TIME_SEC = 3.2;
+const BUBBLE_INTERVAL_SEC  = 1.2;
 
-// Šplouchnutí
-const SPLASH_BASE_SIZE     = 140;   // základní velikost šplouchnutí v px
-const POP_DURATION         = 260;   // délka animace bubliny při zásahu (ms)
+// Šplouch
+const SPLASH_BASE_SIZE     = 140;
+const POP_DURATION         = 260;
 
 // Duše – částice
-const MAX_EXTRA_PARTICLES  = 40;    // maximální počet extra částic okolo duše
+const MAX_EXTRA_PARTICLES  = 40;
 
-// -------------------------------------------------
-// Stav duše (hráče)
-// -------------------------------------------------
-let soulSize   = 1.0;  // 1.0 = základní velikost, 0 = zmizí
-let soulX      = 25;   // v procentech šířky
-let soulY      = 60;   // v procentech výšky
-let extraSoulParticles = 0;
+// Monetizace
+const PLAYER_STATE_KEY        = 'duse_player_state_v1';
+const VISUAL_SAVE_PRICE       = 500;
+const LEVEL_BASE_UNLOCK_PRICE = 1500;
 
-// ----------------------------------------------
-// Doplňkové globální proměnné pro vizuální efekty
-// ----------------------------------------------
-let bgProgressValue = 0;   // poslední progress pozadí (0–1)
-let comboStreak = 0;       // počet zásahů po sobě pro flash
-let flashTimeoutId = null; // timeout pro návrat z flash efektu
-let isFlashActive = false; // právě probíhá full-screen flash?
+// -------------------------- LEVELY -----------------------------
 
-// -------------------------------------------------
-// Herní stav
-// -------------------------------------------------
+const levels = {
+  majak: {
+    key: 'majak',
+    name: 'Maják',
+    image: 'levels/level1/background.jpg',
+    music: 'levels/level1/music.mp3',
+    description: 'Noc, moře, vítr a osamělý maják.',
+    unlockPrice: 0
+  },
+  majak2: {
+    key: 'majak2',
+    name: 'Maják II',
+    image: 'levels/level2/background.jpg',
+    music: 'levels/level2/music.mp3',
+    description: 'Experimentální pokračování se silnějším rytmem.',
+    unlockPrice: 1500
+  }
+};
+
+// Pořadí levelů pro automatické odemykání
+const levelOrder = Object.keys(levels);
+
+// ---------------------- HERNÍ STAV -----------------------------
+
 let currentLevelKey = 'majak';
 
-let levelRunning    = false;
-let gameOverBySoul  = false;
+let soulX = 25;
+let soulY = 60;
+let soulSize = 1.0;
+let extraSoulParticles = 0;
 
-let pattern         = [];
-let totalScheduled  = 0;
-let shownBubbles    = 0;
+let bgProgressValue = 0;
+let comboStreak = 0;
+let flashTimeoutId = null;
+let isFlashActive = false;
 
-let hits            = 0;
-let misses          = 0;
-let score           = 0;
+let levelRunning   = false;
+let gameOverBySoul = false;
 
-let bubbles         = [];
-let activeSplashes  = [];
+let pattern        = [];
+let totalScheduled = 0;
+let shownBubbles   = 0;
+let hits           = 0;
+let misses         = 0;
+let score          = 0;
 
-let spawnTimeouts   = [];
-let endTimeoutId    = null;
+let spawnTimeouts  = [];
+let endTimeoutId   = null;
+let bubbles        = [];
+let activeSplashes = [];
 
-let lastFrameTime   = 0;
+let lastFrameTime  = 0;
 
-// ----------------------------------------------
-// Zákaz přetahování obrázků (ghost image při drag & drop)
-// ----------------------------------------------
-document.addEventListener('dragstart', function (e) {
-  e.preventDefault();
-});
+// --------------------- PLAYER STATE (LS) ------------------------
 
-// -------------------------------------------------
-// HUD / DUŠE – verze s podporou jemného pointeru
-// -------------------------------------------------
+function getDefaultPlayerState() {
+  return {
+    currency: 0,
+    unlockedLevels: ['majak'],
+    flashEffect: 'classic',
+    ambients: {
+      glow: true,
+      shockwave: true,
+      particles: true,
+      saturate: false
+    },
+    savedVisual: null
+  };
+}
+
+function loadPlayerState() {
+  try {
+    const raw = localStorage.getItem(PLAYER_STATE_KEY);
+    if (!raw) return getDefaultPlayerState();
+    const parsed = JSON.parse(raw);
+    const def    = getDefaultPlayerState();
+
+    return {
+      currency: Number.isFinite(parsed.currency) ? parsed.currency : def.currency,
+      unlockedLevels: Array.isArray(parsed.unlockedLevels)
+        ? Array.from(new Set(['majak', ...parsed.unlockedLevels]))
+        : ['majak'],
+      flashEffect: parsed.flashEffect || def.flashEffect,
+      ambients: parsed.ambients || def.ambients,
+      savedVisual: parsed.savedVisual || null
+    };
+  } catch (e) {
+    console.warn('Nepodařilo se načíst playerState, resetuji.', e);
+    return getDefaultPlayerState();
+  }
+}
+
+let playerState = loadPlayerState();
+
+function savePlayerState() {
+  try {
+    localStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(playerState));
+  } catch (e) {
+    console.warn('Nepodařilo se uložit playerState.', e);
+  }
+  updateCurrencyUI();
+  refreshPlayerSettingsUI();
+  refreshLevelsUI();
+}
+
+// Měna
+function addCurrency(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  const inc = Math.floor(amount);
+  if (!Number.isFinite(playerState.currency)) playerState.currency = 0;
+  playerState.currency = Math.max(0, playerState.currency + inc);
+  savePlayerState();
+}
+
+function spendCurrency(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) return false;
+  const cost = Math.floor(amount);
+  if (!Number.isFinite(playerState.currency)) playerState.currency = 0;
+  if (playerState.currency < cost) return false;
+  playerState.currency -= cost;
+  savePlayerState();
+  return true;
+}
+
+// Levely – odemčení
+function isLevelUnlocked(key) {
+  if (!key) return false;
+  if (key === 'majak') return true;
+  const list = Array.isArray(playerState.unlockedLevels)
+    ? playerState.unlockedLevels
+    : ['majak'];
+  return list.includes(key);
+}
+
+function unlockNextLevel(currentKey) {
+  const idx = levelOrder.indexOf(currentKey);
+  if (idx === -1 || idx >= levelOrder.length - 1) return;
+  const nextKey = levelOrder[idx + 1];
+  if (!nextKey) return;
+
+  if (!Array.isArray(playerState.unlockedLevels)) {
+    playerState.unlockedLevels = ['majak'];
+  }
+  if (!playerState.unlockedLevels.includes(nextKey)) {
+    playerState.unlockedLevels.push(nextKey);
+    savePlayerState();
+  }
+}
+
+function tryUnlockLevelWithCurrency(key) {
+  if (!key || !levels[key]) return false;
+  const lvl   = levels[key];
+  const price = typeof lvl.unlockPrice === 'number'
+    ? lvl.unlockPrice
+    : LEVEL_BASE_UNLOCK_PRICE;
+
+  if (!spendCurrency(price)) return false;
+
+  if (!Array.isArray(playerState.unlockedLevels)) {
+    playerState.unlockedLevels = ['majak'];
+  }
+  if (!playerState.unlockedLevels.includes(key)) {
+    playerState.unlockedLevels.push(key);
+  }
+  savePlayerState();
+  return true;
+}
+
+// Uložený vizuál
+function saveCurrentRunAsVisual() {
+  if (!lastRunSummary) return;
+  playerState.savedVisual = {
+    ...lastRunSummary,
+    savedAt: Date.now()
+  };
+  savePlayerState();
+}
+
+function clearSavedVisual() {
+  playerState.savedVisual = null;
+  savePlayerState();
+}
+
+// Nastavení hráče
+function setFlashEffect(mode) {
+  playerState.flashEffect = mode || 'classic';
+  savePlayerState();
+}
+
+function setAmbientsFromUI(glow, shockwave, particles, saturate) {
+  playerState.ambients = {
+    glow: !!glow,
+    shockwave: !!shockwave,
+    particles: !!particles,
+    saturate: !!saturate
+  };
+  savePlayerState();
+}
+
+// ------------------------ HUD / DUŠE ---------------------------
+
 function updateScoreHud() {
   scoreInfo.textContent = 'Skóre: ' + score;
 }
 
 function updateSoulVisual() {
-  // menší duše na zařízeních bez jemného pointeru (mobil / tablet)
   const hasFinePointer =
     window.matchMedia &&
     window.matchMedia('(any-pointer: fine)').matches;
@@ -136,7 +329,7 @@ function updateSoulVisual() {
   const baseFactor = hasFinePointer ? 1.0 : 0.75;
   const size = SOUL_BASE_SIZE * baseFactor * soulSize;
 
-  soul.style.width = size + 'px';
+  soul.style.width  = size + 'px';
   soul.style.height = size + 'px';
   soul.style.opacity = Math.max(0, soulSize);
 }
@@ -149,16 +342,13 @@ function resetSoulParticles() {
 }
 
 function addSoulParticle() {
-  // ambient: částice kolem duše – můžou být vypnuté v profilu hráče
-  if (
-    typeof playerState !== 'undefined' &&
-    playerState.ambients &&
-    playerState.ambients.particles === false
-  ) {
+  if (!soulParticlesContainer) return;
+
+  // ambient – hráč může částice vypnout
+  if (playerState && playerState.ambients && playerState.ambients.particles === false) {
     return;
   }
 
-  if (!soulParticlesContainer) return;
   if (extraSoulParticles >= MAX_EXTRA_PARTICLES) return;
 
   const dot = document.createElement('div');
@@ -187,12 +377,14 @@ function resetSoul() {
 
 function moveSoulTo(xPercent, yPercent) {
   soulX = xPercent;
-  soulY = yPercent + 8; // lehký offset, aby se nelepila přesně na kapku
+  soulY = yPercent + 8;
+
   soul.classList.remove('soul-dash', 'soul-grow', 'soul-flash');
-  // reflow pro restart animace
-  void soul.offsetWidth;
+  void soul.offsetWidth; // reflow
+
   soulWrapper.style.left = soulX + '%';
   soulWrapper.style.top  = soulY + '%';
+
   soul.classList.add('soul-dash');
 }
 
@@ -208,18 +400,22 @@ function showFloatingScore(text, xPercent, yPercent) {
   }, 900);
 }
 
-// -------------------------------------------------
-// LEVELY + PATTERN
-// -------------------------------------------------
+// ------------------------ LEVELY / PATTERN ---------------------
+
 function loadLevelAssets() {
   const lvl = levels[currentLevelKey];
   if (!lvl) return;
+
   scrollTrack.style.opacity = 0;
-  scrollTrack.style.filter = 'grayscale(1)';
+  scrollTrack.style.filter  = 'grayscale(1)';
+
   bgImage1.src = lvl.image;
   bgImage2.src = lvl.image;
   music.src    = lvl.music;
+
   imageStatus.textContent = '';
+  imageStatus.classList.remove('error');
+  imageStatus.classList.remove('ok');
 }
 
 function setCurrentLevel(key) {
@@ -250,12 +446,12 @@ function buildPatternForMusic() {
     return;
   }
 
-  const startOffset = 1.0;
-  const endReserve  = 1.0;
-  const startInterval = 1.8;
-  const endInterval   = 0.8;
-  const startTravelFactor = 1.1;
-  const endTravelFactor   = 0.6;
+  const startOffset        = 1.0;
+  const endReserve         = 1.0;
+  const startInterval      = 1.8;
+  const endInterval        = 0.8;
+  const startTravelFactor  = 1.1;
+  const endTravelFactor    = 0.6;
 
   const windowSec = durationSec - startOffset - endReserve - BASE_TRAVEL_TIME_SEC;
   if (windowSec <= 0) {
@@ -273,7 +469,7 @@ function buildPatternForMusic() {
 
   for (let i = 0; i < count; i++) {
     const r = count > 1 ? i / (count - 1) : 0;
-    const travelFactor = startTravelFactor + (endTravelFactor - startTravelFactor) * r;
+    const travelFactor  = startTravelFactor + (endTravelFactor - startTravelFactor) * r;
     const travelTimeSec = BASE_TRAVEL_TIME_SEC * travelFactor;
 
     newPattern.push({
@@ -292,14 +488,12 @@ function buildPatternForMusic() {
   totalScheduled = pattern.length;
 }
 
-// -------------------------------------------------
-// POZADÍ – černá → šedá → barevná + FLASH
-// -------------------------------------------------
+// ------------------------- POZADÍ / FLASH ----------------------
+
 function updateBackgroundProgress(progress) {
   const p = Math.max(0, Math.min(1, progress));
   bgProgressValue = p;
 
-  // 0: zcela černá – skryjeme obrázek
   if (p === 0) {
     scrollTrack.style.opacity = 0;
     scrollTrack.style.filter  = 'grayscale(1)';
@@ -308,50 +502,42 @@ function updateBackgroundProgress(progress) {
 
   let opacity, grayscale;
 
-  // 0–0.5: černá → šedá (obrázek postupně vystupuje, ale je šedý)
   if (p < 0.5) {
-    const phase = p / 0.5;       // 0→1
-    opacity = phase;             // 0→1
-    grayscale = 1;               // stále šedý
+    const phase = p / 0.5;
+    opacity = phase;
+    grayscale = 1;
   } else {
-    // 0.5–1: šedá → barevná
-    const phase = (p - 0.5) / 0.5; // 0→1
+    const phase = (p - 0.5) / 0.5;
     opacity = 1;
-    grayscale = 1 - phase;        // 1→0
+    grayscale = 1 - phase;
   }
 
   scrollTrack.style.opacity = opacity;
   scrollTrack.style.filter  = `grayscale(${grayscale})`;
 }
 
-// smaže všechny existující barevné výseče (color-burst)
 function clearAllColorBursts() {
   if (!world) return;
   const bursts = world.querySelectorAll('.color-burst');
   bursts.forEach(b => b.remove());
 }
 
-// krátký flash – délka a síla podle tieru (5, 10, 15…)
-// nově respektuje hráčské nastavení flashEffect
 function triggerComboFlash(tier) {
   if (!scrollTrack) return;
 
   const effect = (playerState && playerState.flashEffect) || 'classic';
   if (effect === 'off') {
-    return; // hráč flash vypnul
+    return;
   }
 
-  // zruš případný předchozí timeout
   if (flashTimeoutId !== null) {
     clearTimeout(flashTimeoutId);
     flashTimeoutId = null;
   }
 
-  // tier = 1 pro 5 zásahů, 2 pro 10, atd. – omezíme, aby to neulítlo
   const cappedTier = Math.min(tier, 20);
-
-  let strengthBase = 1.0 + cappedTier * 0.12;  // 1.0–3.4
-  let durationBase = 200 + cappedTier * 40;    // 240–1000 ms
+  let strengthBase = 1.0 + cappedTier * 0.12;
+  let durationBase = 200 + cappedTier * 40;
 
   let strengthScale = 1.0;
   let durationScale = 1.0;
@@ -380,9 +566,6 @@ function triggerComboFlash(tier) {
   const duration = durationBase * durationScale;
 
   isFlashActive = true;
-
-  // při startu flash efektu okamžitě smažeme všechny lokální výseče,
-  // aby se už nemohly „rozsvítit“ přes backdrop-filter
   clearAllColorBursts();
 
   scrollTrack.style.setProperty('--flashStrength', strength.toFixed(2));
@@ -390,30 +573,17 @@ function triggerComboFlash(tier) {
 
   flashTimeoutId = window.setTimeout(() => {
     scrollTrack.classList.remove('flash-fullcolor');
-    // návrat do stavu podle aktuálního progresu
     updateBackgroundProgress(bgProgressValue);
     isFlashActive = false;
     flashTimeoutId = null;
   }, duration);
 }
 
-// -------------------------------------------------
-// LOKÁLNÍ RIPPLE – barevná vlna v místě zásahu
-// -------------------------------------------------
 function spawnColorBurst(centerX, centerY, strength) {
   if (!world) return;
+  if (isFlashActive) return;
 
-  // pokud právě jede full-screen flash, lokální výseč vůbec nespouštěj
-  if (isFlashActive) {
-    return;
-  }
-
-  // ambient: hráč může shockwave vypnout
-  if (
-    typeof playerState !== 'undefined' &&
-    playerState.ambients &&
-    playerState.ambients.shockwave === false
-  ) {
+  if (playerState && playerState.ambients && playerState.ambients.shockwave === false) {
     return;
   }
 
@@ -426,39 +596,30 @@ function spawnColorBurst(centerX, centerY, strength) {
   burst.style.left = xPercent + '%';
   burst.style.top  = yPercent + '%';
 
-  // normalizace síly zásahu (super / normální hit)
   const s = Math.max(0, strength || 0);
   const sNorm = Math.min(1, s / 1.2);
 
-  // jak moc už je obrázek vybarvený (0 = černá/šedá, 1 = plná barva)
   const p = Math.max(0, Math.min(1, bgProgressValue || 0));
-
-  // základní intenzita podle progresu:
-  //  - p = 0   -> intensity = 1   (max WOW)
-  //  - p = 1   -> intensity = 0   (mizí)
   let intensity = Math.pow(1 - p, 1.2);
 
-  // saturace – čím větší intensity, tím víc barvy
   const baseSat = 1.0;
+  const baseBright = 1.0;
+
   let sat =
     baseSat +
     3.0 * intensity +
     0.7 * sNorm * intensity;
 
-  // jas – opatrnější, ať nespálíme barvy
-  const baseBright = 1.0;
   let bright =
     baseBright +
     0.6 * intensity +
     0.3 * sNorm * intensity;
 
-  // ambient: extra saturace
   if (playerState && playerState.ambients && playerState.ambients.saturate) {
     sat *= 1.2;
     bright *= 1.05;
   }
 
-  // hodnoty pro CSS (viz .color-burst v game.css)
   burst.style.setProperty('--burst-saturate', sat.toFixed(2));
   burst.style.setProperty('--burst-bright',   bright.toFixed(2));
 
@@ -469,162 +630,62 @@ function spawnColorBurst(centerX, centerY, strength) {
   }, 700);
 }
 
-// vizuální pop-up pro combo bonus
-function showComboPopup(comboValue, bonus) {
-  const popup = document.createElement('div');
-  popup.className = 'combo-popup';
-  popup.innerHTML = `COMBO <span>x${comboValue}</span> +${bonus}`;
-  world.appendChild(popup);
+// ------------------------ ŠPLOUCHNUTÍ --------------------------
+
+function createSplashAtClient(clientX, clientY, isSuper) {
+  const rect = world.getBoundingClientRect();
+  const xPercent = ((clientX - rect.left) / rect.width) * 100;
+  const yPercent = ((clientY - rect.top) / rect.height) * 100;
+
+  const splash = document.createElement('div');
+  splash.className = 'splash';
+  if (isSuper) splash.classList.add('splash-super', 'splash-hit');
+  splash.style.left = xPercent + '%';
+  splash.style.top  = yPercent + '%';
+  world.appendChild(splash);
+
+  const createdAt = performance.now();
+  const lifeMs    = isSuper ? 450 : 350;
+  const maxRadius = (SPLASH_BASE_SIZE / 2) * (isSuper ? 2.0 : 1.4);
+
+  activeSplashes.push({
+    el: splash,
+    xPx: clientX,
+    yPx: clientY,
+    createdAt,
+    lifeMs,
+    maxRadius,
+    isSuper,
+    used: false
+  });
 
   setTimeout(() => {
-    if (popup.parentNode) popup.parentNode.removeChild(popup);
-  }, 900);
+    if (splash.parentNode) splash.parentNode.removeChild(splash);
+  }, lifeMs + 120);
 }
 
-// -------------------------------------------------
-// MISS / RESET
-// -------------------------------------------------
-function registerMiss() {
-  if (!levelRunning) return;
+function spawnBubbleFragments(bubbleObj) {
+  const rectWorld  = world.getBoundingClientRect();
+  const rectBubble = bubbleObj.el.getBoundingClientRect();
+  const centerX = rectBubble.left + rectBubble.width / 2;
+  const centerY = rectBubble.top + rectBubble.height / 2;
 
-  misses++;
-  comboStreak = 0; // přerušíme combo
+  const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
+  const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
 
-  soulSize = Math.max(0, soulSize - SOUL_SHRINK_PER_MISS);
-  updateSoulVisual();
+  const glow = document.createElement('div');
+  glow.className = 'bubble-light';
+  glow.style.left = xPercent + '%';
+  glow.style.top  = yPercent + '%';
+  world.appendChild(glow);
 
-  if (soulSize <= SOUL_MIN_SIZE) {
-    gameOverBySoul = true;
-    music.pause();
-    endLevel('Duše se rozplynula… Game Over.');
-  }
+  setTimeout(() => {
+    if (glow.parentNode) glow.parentNode.removeChild(glow);
+  }, 500);
 }
 
-function resetScrollTrackAnimation() {
-  scrollTrack.style.animation = 'none';
-  void scrollTrack.offsetWidth; // reflow
-  scrollTrack.style.animation = '';
-}
+// ------------------------ SPAWN BUBLIN -------------------------
 
-function clearAllSpawnTimers() {
-  spawnTimeouts.forEach(id => clearTimeout(id));
-  spawnTimeouts = [];
-  if (endTimeoutId !== null) {
-    clearTimeout(endTimeoutId);
-    endTimeoutId = null;
-  }
-}
-
-function clearAllSplashes() {
-  activeSplashes.forEach(s => {
-    if (s.el && s.el.parentNode) s.el.parentNode.removeChild(s.el);
-  });
-  activeSplashes = [];
-}
-
-function clearAllBubbles() {
-  bubbles.forEach(b => {
-    if (b.el && b.el.parentNode) b.el.parentNode.removeChild(b.el);
-  });
-  bubbles = [];
-}
-
-function resetLevelState() {
-  levelRunning = false;
-  clearAllSpawnTimers();
-  clearAllSplashes();
-  clearAllBubbles();
-
-  updateBackgroundProgress(0);
-  shownBubbles = 0;
-  hits = 0;
-  misses = 0;
-  gameOverBySoul = false;
-  score = 0;
-  comboStreak = 0;
-  updateScoreHud();
-  statsEl.textContent = '';
-  statusText.textContent = '';
-
-  lastFrameTime = 0;
-  lastRunSummary = null;
-  resetSoul();
-}
-
-// -------------------------------------------------
-// MENU / PŘECHODY
-// -------------------------------------------------
-function showMenuScreen() {
-  music.pause();
-  menuScreen.classList.remove('hidden');
-  gameScreen.classList.add('hidden');
-  levelIntroOverlay.classList.add('overlay-hidden');
-  resultOverlay.classList.add('overlay-hidden');
-}
-
-function showLevelIntro() {
-  levelIntroOverlay.classList.remove('overlay-hidden');
-  resultOverlay.classList.add('overlay-hidden');
-}
-
-function goToLevel(key) {
-  if (!levels[key]) return;
-  // pokud level není odemčený, ignoruj
-  if (!isLevelUnlocked(key)) {
-    alert('Tento level je zatím zamčený. Zkus ho odemknout v menu LEVELY.');
-    return;
-  }
-
-  setCurrentLevel(key);
-  resetLevelState();
-  menuScreen.classList.add('hidden');
-  gameScreen.classList.remove('hidden');
-  showLevelIntro();
-}
-
-// -------------------------------------------------
-// KONEC LEVELU – základní verze (bude obalena monetizací)
-// -------------------------------------------------
-function endLevel(reason = 'Level je u konce.') {
-  if (!levelRunning) return;
-  levelRunning = false;
-  clearAllSpawnTimers();
-  clearAllSplashes();
-  clearAllBubbles();
-
-  statusText.textContent = reason;
-
-  const totalEvents = hits + misses;
-  const effectiveShown = shownBubbles;
-  const accuracyNum = totalEvents > 0 ? (hits / totalEvents * 100) : 0;
-  const accuracy = accuracyNum.toFixed(1);
-  const avgScorePerHit = hits > 0 ? (score / hits).toFixed(2) : 0;
-
-  const statsHtml = `
-    <p><em>${reason}</em></p>
-    <p>
-      Kapek v patternu: <strong>${totalScheduled}</strong><br>
-      Opravdu zobrazených kapek: <strong>${effectiveShown}</strong><br>
-      Zásahy: <strong>${hits}</strong><br>
-      Minuté: <strong>${misses}</strong><br>
-      Úspěšnost (zásah / zásah+minuté): <strong>${accuracy}%</strong><br>
-      Celkové skóre: <strong>${score}</strong><br>
-      Průměrné body za zásah: <strong>${avgScorePerHit}</strong>
-    </p>
-  `;
-
-  statsEl.innerHTML = statsHtml;
-  resultStatsEl.innerHTML = statsHtml;
-  resultOverlay.classList.remove('overlay-hidden');
-
-  restartBtn.disabled = false;
-  startBtn.disabled = false;
-  playAgainBtn.disabled = false;
-}
-
-// -------------------------------------------------
-// SPAWN BUBLIN
-// -------------------------------------------------
 function spawnBubbleAt(yPercent, travelTimeSec) {
   if (!levelRunning) return;
 
@@ -633,8 +694,8 @@ function spawnBubbleAt(yPercent, travelTimeSec) {
   const startX = BUBBLE_START_X;
   const endX   = BUBBLE_END_X;
   const distance = startX - endX;
-  const travel = travelTimeSec || BASE_TRAVEL_TIME_SEC;
-  const speed = distance / travel;
+  const travel   = travelTimeSec || BASE_TRAVEL_TIME_SEC;
+  const speed    = distance / travel;
 
   const el = bubbleTemplate.cloneNode(true);
   el.id = '';
@@ -683,7 +744,9 @@ function schedulePattern() {
 
   if (pattern.length > 0) {
     const last = pattern[pattern.length - 1];
-    const lastTimeMs = last.t * 1000 + (last.travelTimeSec || BASE_TRAVEL_TIME_SEC) * 1000;
+    const lastTimeMs =
+      last.t * 1000 + (last.travelTimeSec || BASE_TRAVEL_TIME_SEC) * 1000;
+
     endTimeoutId = setTimeout(() => {
       if (levelRunning && !gameOverBySoul) {
         music.pause();
@@ -694,91 +757,164 @@ function schedulePattern() {
   }
 }
 
-// -------------------------------------------------
-// START LEVELU
-// -------------------------------------------------
-function startLevel() {
-  resetLevelState();
-  levelIntroOverlay.classList.add('overlay-hidden');
-  resultOverlay.classList.add('overlay-hidden');
-  resetScrollTrackAnimation();
+// ------------------------ MISS / RESET -------------------------
 
-  if (!pattern.length || totalScheduled === 0) {
-    buildPatternForMusic();
+function registerMiss() {
+  if (!levelRunning) return;
+
+  misses++;
+  comboStreak = 0;
+
+  soulSize = Math.max(0, soulSize - SOUL_SHRINK_PER_MISS);
+  updateSoulVisual();
+
+  if (soulSize <= SOUL_MIN_SIZE) {
+    gameOverBySoul = true;
+    music.pause();
+    endLevel('Duše se rozplynula… Game Over.');
+  }
+}
+
+function resetScrollTrackAnimation() {
+  scrollTrack.style.animation = 'none';
+  void scrollTrack.offsetWidth;
+  scrollTrack.style.animation = '';
+}
+
+function clearAllSpawnTimers() {
+  spawnTimeouts.forEach(id => clearTimeout(id));
+  spawnTimeouts = [];
+  if (endTimeoutId !== null) {
+    clearTimeout(endTimeoutId);
+    endTimeoutId = null;
+  }
+}
+
+function clearAllSplashes() {
+  activeSplashes.forEach(s => {
+    if (s.el && s.el.parentNode) s.el.parentNode.removeChild(s.el);
+  });
+  activeSplashes = [];
+}
+
+function clearAllBubbles() {
+  bubbles.forEach(b => {
+    if (b.el && b.el.parentNode) b.el.parentNode.removeChild(b.el);
+  });
+  bubbles = [];
+}
+
+function resetLevelState() {
+  levelRunning = false;
+  clearAllSpawnTimers();
+  clearAllSplashes();
+  clearAllBubbles();
+
+  updateBackgroundProgress(0);
+  shownBubbles = 0;
+  hits   = 0;
+  misses = 0;
+  gameOverBySoul = false;
+  score  = 0;
+  comboStreak = 0;
+  updateScoreHud();
+  statsEl.textContent = '';
+  statusText.textContent = '';
+
+  lastFrameTime   = 0;
+  lastRunSummary  = null;
+  resetSoul();
+}
+
+// ---------------------------- END LEVEL ------------------------
+
+function endLevel(reason = 'Level je u konce.') {
+  if (!levelRunning) return;
+  levelRunning = false;
+
+  clearAllSpawnTimers();
+  clearAllSplashes();
+  clearAllBubbles();
+
+  statusText.textContent = reason;
+
+  const totalEvents = hits + misses;
+  const effectiveShown = shownBubbles;
+  const accuracyNum = totalEvents > 0 ? (hits / totalEvents * 100) : 0;
+  const accuracy = accuracyNum.toFixed(1);
+  const avgScorePerHit = hits > 0 ? (score / hits).toFixed(2) : 0;
+
+  const statsHtml = `
+    <p><em>${reason}</em></p>
+    <p>
+      Kapek v patternu: <strong>${totalScheduled}</strong><br>
+      Opravdu zobrazených kapek: <strong>${effectiveShown}</strong><br>
+      Zásahy: <strong>${hits}</strong><br>
+      Minuté: <strong>${misses}</strong><br>
+      Úspěšnost (zásah / zásah+minuté): <strong>${accuracy}%</strong><br>
+      Celkové skóre: <strong>${score}</strong><br>
+      Průměrné body za zásah: <strong>${avgScorePerHit}</strong>
+    </p>
+  `;
+
+  statsEl.innerHTML      = statsHtml;
+  resultStatsEl.innerHTML = statsHtml;
+  resultOverlay.classList.remove('overlay-hidden');
+
+  // shrnutí posledního běhu
+  const completedAll =
+    hits >= totalScheduled &&
+    totalScheduled > 0 &&
+    !gameOverBySoul;
+
+  lastRunSummary = {
+    levelKey: currentLevelKey,
+    score: score,
+    hits: hits,
+    misses: misses,
+    totalScheduled: totalScheduled,
+    accuracy: accuracyNum,
+    completedAll: completedAll
+  };
+
+  // 100 % completion → odemknout další level
+  if (completedAll) {
+    unlockNextLevel(currentLevelKey);
   }
 
-  levelRunning = true;
-  statusText.textContent = 'Level běží – klikej na kapky rytmicky.';
+  // Měna = skóre
+  if (score > 0) {
+    addCurrency(score);
+    if (currencyInfoEl) {
+      currencyInfoEl.textContent =
+        'Za tento run získáváš ' + score + ' ✦ měny.';
+    }
+  } else if (currencyInfoEl) {
+    currencyInfoEl.textContent =
+      'Tentokrát jsi nezískal žádnou měnu.';
+  }
 
-  restartBtn.disabled = true;
-  playAgainBtn.disabled = true;
-  startBtn.disabled = true;
+  // Save vizuál tlačítko
+  if (saveVisualBtn) {
+    saveVisualBtn.disabled = !lastRunSummary;
+    if (playerState && playerState.savedVisual) {
+      saveVisualBtn.textContent =
+        'Přepsat uložený vizuál (cena ' + VISUAL_SAVE_PRICE + ' ✦)';
+    } else {
+      saveVisualBtn.textContent = 'Uložit tento vizuál';
+    }
+  }
 
-  music.currentTime = 0;
-  music.play();
+  restartBtn.disabled   = false;
+  startBtn.disabled     = false;
+  playAgainBtn.disabled = false;
 
-  schedulePattern();
+  // refresh levelů v menu (kvůli odemykání)
+  refreshLevelsUI();
 }
 
-// -------------------------------------------------
-// ŠPLOUCHNUTÍ A FRAGMENTY
-// -------------------------------------------------
-function createSplashAtClient(clientX, clientY, isSuper) {
-  const rect = world.getBoundingClientRect();
-  const xPercent = ((clientX - rect.left) / rect.width) * 100;
-  const yPercent = ((clientY - rect.top) / rect.height) * 100;
+// ----------------------------- GAME LOOP -----------------------
 
-  const splash = document.createElement('div');
-  splash.className = 'splash';
-  if (isSuper) splash.classList.add('splash-super', 'splash-hit');
-  splash.style.left = xPercent + '%';
-  splash.style.top  = yPercent + '%';
-  world.appendChild(splash);
-
-  const createdAt = performance.now();
-  const lifeMs    = isSuper ? 450 : 350;
-  const maxRadius = (SPLASH_BASE_SIZE / 2) * (isSuper ? 2.0 : 1.4);
-
-  activeSplashes.push({
-    el: splash,
-    xPx: clientX,
-    yPx: clientY,
-    createdAt,
-    lifeMs,
-    maxRadius,
-    isSuper,
-    used: false
-  });
-
-  setTimeout(() => {
-    if (splash.parentNode) splash.parentNode.removeChild(splash);
-  }, lifeMs + 120);
-}
-
-// světlý glow kolem bubliny
-function spawnBubbleFragments(bubbleObj) {
-  const rectWorld  = world.getBoundingClientRect();
-  const rectBubble = bubbleObj.el.getBoundingClientRect();
-  const centerX = rectBubble.left + rectBubble.width / 2;
-  const centerY = rectBubble.top + rectBubble.height / 2;
-
-  const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
-  const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
-
-  const glow = document.createElement('div');
-  glow.className = 'bubble-light';
-  glow.style.left = xPercent + '%';
-  glow.style.top  = yPercent + '%';
-  world.appendChild(glow);
-
-  setTimeout(() => {
-    if (glow.parentNode) glow.parentNode.removeChild(glow);
-  }, 500);
-}
-
-// -------------------------------------------------
-// GAME LOOP
-// -------------------------------------------------
 function gameLoop() {
   const now = performance.now();
   if (!lastFrameTime) lastFrameTime = now;
@@ -793,8 +929,8 @@ function gameLoop() {
       b.ageSec += dt;
 
       b.xPercent -= b.speedPercentPerSec * dt;
-      const wave = b.waveAmp * Math.sin(b.ageSec * b.waveFreq);
-      b.yPercent = b.baseY + wave;
+      const wave  = b.waveAmp * Math.sin(b.ageSec * b.waveFreq);
+      b.yPercent  = b.baseY + wave;
 
       if (b.yPercent < 20) b.yPercent = 20;
       if (b.yPercent > 80) b.yPercent = 80;
@@ -813,7 +949,7 @@ function gameLoop() {
     bubbles = stillAlive;
   }
 
-  // šplouchání – expandující kruh, který může trefit bublinu
+  // šplouchání → zásah bublin
   activeSplashes = activeSplashes.filter(s => {
     const age = now - s.createdAt;
     if (age > s.lifeMs) return false;
@@ -821,9 +957,10 @@ function gameLoop() {
     if (levelRunning && !s.used && bubbles.length > 0) {
       for (const b of bubbles) {
         if (b.hit || b.missed) continue;
+
         const rectBubble = b.el.getBoundingClientRect();
-        const bx = rectBubble.left + rectBubble.width / 2;
-        const by = rectBubble.top + rectBubble.height / 2;
+        const bx = rectBubble.left + rectBubble.width  / 2;
+        const by = rectBubble.top  + rectBubble.height / 2;
         const bubbleRadius = rectBubble.width / 2;
 
         const t = Math.min(1, age / s.lifeMs);
@@ -849,24 +986,22 @@ function gameLoop() {
 
 requestAnimationFrame(gameLoop);
 
-// -------------------------------------------------
-// ZÁSAH BUBLINY
-// -------------------------------------------------
+// -------------------------- ZÁSAH BUBLINY ----------------------
+
 function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   if (!levelRunning) return;
   if (!bubbleObj || bubbleObj.hit || bubbleObj.missed) return;
 
   hits++;
-  comboStreak++; // zásah do comba
+  comboStreak++;
 
   const rectWorld  = world.getBoundingClientRect();
   const rectBubble = bubbleObj.el.getBoundingClientRect();
-  const centerX = rectBubble.left + rectBubble.width / 2;
-  const centerY = rectBubble.top + rectBubble.height / 2;
+  const centerX = rectBubble.left + rectBubble.width  / 2;
+  const centerY = rectBubble.top  + rectBubble.height / 2;
   const xPercent = ((centerX - rectWorld.left) / rectWorld.width) * 100;
-  const yPercent = ((centerY - rectWorld.top) / rectWorld.height) * 100;
+  const yPercent = ((centerY - rectWorld.top)  / rectWorld.height) * 100;
 
-  // glow + barevná vlna, která se rozplývá
   spawnBubbleFragments(bubbleObj);
   spawnColorBurst(centerX, centerY, isSuper ? 1.2 : 1.0);
 
@@ -880,10 +1015,10 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
 
   const growAmount = SOUL_GROW_PER_HIT * (isSuper ? 1.6 : 1.0);
   soulSize = Math.min(SOUL_MAX_SIZE, soulSize + growAmount);
+
   soul.classList.remove('soul-grow', 'soul-flash');
   void soul.offsetWidth;
 
-  // ambient: glow duše při zásahu může být vypnutý
   if (playerState && playerState.ambients && playerState.ambients.glow !== false) {
     soul.classList.add('soul-grow', 'soul-flash');
   } else {
@@ -893,7 +1028,6 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   updateSoulVisual();
   addSoulParticle();
 
-  // timing bonus
   const normX = (centerX - rectWorld.left) / rectWorld.width;
   let zone = Math.floor(normX * 4);
   if (zone < 0) zone = 0;
@@ -913,11 +1047,10 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   const basePoints = 1;
   let gained = basePoints + timingBonus + precisionBonus;
 
-  // COMBO bonus: každých 5 zásahů v řadě → +10 bodů + flash
   if (comboStreak > 0 && comboStreak % 5 === 0) {
-    const tier = Math.floor(comboStreak / 5); // 1, 2, 3… pro 5, 10, 15…
+    const tier = Math.floor(comboStreak / 5);
     const comboBonus = 10;
-    gained += comboBonus;        // přičteme k tomuto zásahu
+    gained += comboBonus;
     score += gained;
     updateScoreHud();
     triggerComboFlash(tier);
@@ -927,7 +1060,8 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
     updateScoreHud();
   }
 
-  statusText.textContent = `Zásah: +${gained} (čas +${timingBonus}, přesnost +${precisionBonus})`;
+  statusText.textContent =
+    `Zásah: +${gained} (čas +${timingBonus}, přesnost +${precisionBonus})`;
   showFloatingScore('+' + gained, soulX, soulY - 6);
 
   const progress = totalScheduled > 0 ? hits / totalScheduled : 0;
@@ -939,9 +1073,19 @@ function handleBubbleHit(bubbleObj, isSuper, clickX, clickY) {
   }
 }
 
-// -------------------------------------------------
-// KLIK DO SVĚTA
-// -------------------------------------------------
+function showComboPopup(comboValue, bonus) {
+  const popup = document.createElement('div');
+  popup.className = 'combo-popup';
+  popup.innerHTML = `COMBO <span>x${comboValue}</span> +${bonus}`;
+  world.appendChild(popup);
+
+  setTimeout(() => {
+    if (popup.parentNode) popup.parentNode.removeChild(popup);
+  }, 900);
+}
+
+// ----------------------- KLIK DO SVĚTA ------------------------
+
 function handleClickAt(clientX, clientY) {
   if (!levelRunning) return;
   if (!bubbles.length) return;
@@ -969,8 +1113,7 @@ function handleClickAt(clientX, clientY) {
   if (directHit) {
     handleBubbleHit(target, true, clientX, clientY);
   } else {
-    // klik mimo → combo reset
-    comboStreak = 0;
+    comboStreak = 0; // klik mimo
   }
 }
 
@@ -978,9 +1121,8 @@ world.addEventListener('pointerdown', e => {
   handleClickAt(e.clientX, e.clientY);
 });
 
-// -------------------------------------------------
-// CUSTOM CURSOR LIGHT – jen vizuál, kurzor řeší CSS
-// -------------------------------------------------
+// ---------------------- CUSTOM CURSOR LIGHT --------------------
+
 if (cursorLight) {
   window.addEventListener('mousemove', e => {
     cursorLight.style.left = e.clientX + 'px';
@@ -993,247 +1135,9 @@ if (cursorLight) {
   });
 }
 
-// -------------------------------------------------
-// LEVEL DEFINICE (včetně cen pro odemknutí)
-// -------------------------------------------------
-const levels = {
-  majak: {
-    key: 'majak',
-    name: 'Maják',
-    image: 'levels/level1/background.jpg',
-    music: 'levels/level1/music.mp3',
-    description: 'Noc, moře, vítr a osamělý maják.',
-    unlockPrice: 0
-  },
-  majak2: {
-    key: 'majak2',
-    name: 'Maják II',
-    image: 'levels/level2/background.jpg',
-    music: 'levels/level2/music.mp3',
-    description: 'Experimentální pokračování se silnějším rytmem.',
-    unlockPrice: 1500
-  }
-};
-
-// -------------------------------------------------
-// DUŠE – UI, menu a monetizace
-// -------------------------------------------------
-
-// Základní DOM prvky pro menu sekce vpravo
-const menuSections = document.querySelectorAll('.menu-section');
-
-// Volitelné tlačítko pauzy v HUD
-const playPauseBtn = document.getElementById('playPauseBtn');
-
-// Volitelná záložka HRÁČ v levém menu (pokud ji máš v HTML)
-const menuPlayer = document.getElementById('menuPlayer');
-
-// -------------------------------------------------
-// VOLITELNÉ PRVKY PRO HRÁČSKÝ PROFIL / MĚNU (monetizace)
-// -------------------------------------------------
-
-// „Měna“ a nastavení hráče (tab HRÁČ)
-const currencyValueEl          = document.getElementById('currencyValue');
-const flashEffectSelect        = document.getElementById('flashEffectSelect');
-const ambientGlowCheckbox      = document.getElementById('ambientGlow');
-const ambientShockwaveCheckbox = document.getElementById('ambientShockwave');
-const ambientParticlesCheckbox = document.getElementById('ambientParticles');
-const ambientSaturateCheckbox  = document.getElementById('ambientSaturate');
-
-const savedVisualText          = document.getElementById('savedVisualText');
-const replaySavedVisualBtn     = document.getElementById('replaySavedVisualBtn');
-const clearSavedVisualBtn      = document.getElementById('clearSavedVisualBtn');
-const savePlayerSettingsBtn    = document.getElementById('savePlayerSettingsBtn');
-const playerSettingsStatus     = document.getElementById('playerSettingsStatus');
-
-// prvky ve výsledkovém overlayi
-const saveVisualBtn            = document.getElementById('saveVisualBtn');
-const currencyInfoEl           = document.getElementById('currencyInfo');
-
-// shrnutí posledního dohraného runu – plní se v endLevel wrapperu
-let lastRunSummary = null;
-
-// -------------------------------------------------
-// HRÁČSKÝ STAV / MĚNA (localStorage)
-// -------------------------------------------------
-
-const PLAYER_STATE_KEY          = 'duse_player_state_v1';
-const VISUAL_SAVE_PRICE         = 500;
-const LEVEL_BASE_UNLOCK_PRICE   = 1500;
-
-// výchozí stav – funguje i když nic v localStorage není
-function getDefaultPlayerState() {
-  return {
-    currency: 0,
-    unlockedLevels: ['majak'], // první level vždy odemčený
-    flashEffect: 'classic',
-    ambients: {
-      glow: true,
-      shockwave: true,
-      particles: true,
-      saturate: false
-    },
-    savedVisual: null
-  };
-}
-
-function loadPlayerState() {
-  try {
-    const raw = localStorage.getItem(PLAYER_STATE_KEY);
-    if (!raw) return getDefaultPlayerState();
-
-    const parsed = JSON.parse(raw);
-    const def    = getDefaultPlayerState();
-
-    return {
-      currency: Number.isFinite(parsed.currency) ? parsed.currency : def.currency,
-      unlockedLevels: Array.isArray(parsed.unlockedLevels)
-        ? Array.from(new Set(['majak', ...parsed.unlockedLevels]))
-        : ['majak'],
-      flashEffect: parsed.flashEffect || def.flashEffect,
-      ambients: parsed.ambients || def.ambients,
-      savedVisual: parsed.savedVisual || null
-    };
-  } catch (e) {
-    console.warn('Nepodařilo se načíst playerState, resetuji.', e);
-    return getDefaultPlayerState();
-  }
-}
-
-let playerState = loadPlayerState();
-
-function savePlayerState() {
-  try {
-    localStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(playerState));
-  } catch (e) {
-    console.warn('Nepodařilo se uložit playerState.', e);
-  }
-
-  updateCurrencyUI();
-  refreshPlayerSettingsUI();
-  refreshLevelsUI();
-}
-
-// přičtení měny
-function addCurrency(amount) {
-  if (!Number.isFinite(amount) || amount <= 0) return;
-  const inc = Math.floor(amount);
-
-  if (!Number.isFinite(playerState.currency)) {
-    playerState.currency = 0;
-  }
-  playerState.currency = Math.max(0, playerState.currency + inc);
-  savePlayerState();
-}
-
-// utracení měny
-function spendCurrency(amount) {
-  if (!Number.isFinite(amount) || amount <= 0) return false;
-  const cost = Math.floor(amount);
-
-  if (!Number.isFinite(playerState.currency)) {
-    playerState.currency = 0;
-  }
-  if (playerState.currency < cost) return false;
-
-  playerState.currency -= cost;
-  savePlayerState();
-  return true;
-}
-
-// je level odemčený?
-function isLevelUnlocked(key) {
-  if (!key) return false;
-  if (key === 'majak') return true;
-
-  const list = Array.isArray(playerState.unlockedLevels)
-    ? playerState.unlockedLevels
-    : ['majak'];
-
-  return list.includes(key);
-}
-
-// odemknout další level (při 100% dokončení)
-function unlockNextLevel(currentKey) {
-  if (!currentKey || typeof levels !== 'object' || !levels) return;
-
-  const keys = Object.keys(levels);
-  const idx  = keys.indexOf(currentKey);
-  if (idx === -1 || idx >= keys.length - 1) return;
-
-  const nextKey = keys[idx + 1];
-  if (!nextKey) return;
-
-  if (!Array.isArray(playerState.unlockedLevels)) {
-    playerState.unlockedLevels = ['majak'];
-  }
-  if (!playerState.unlockedLevels.includes(nextKey)) {
-    playerState.unlockedLevels.push(nextKey);
-    savePlayerState();
-  }
-}
-
-// odemknutí konkrétního levelu za měnu (v menu LEVELY)
-function tryUnlockLevelWithCurrency(key) {
-  if (!key || typeof levels !== 'object' || !levels[key]) return false;
-
-  const lvl   = levels[key];
-  const price = (lvl && typeof lvl.unlockPrice === 'number')
-    ? lvl.unlockPrice
-    : LEVEL_BASE_UNLOCK_PRICE;
-
-  if (!spendCurrency(price)) return false;
-
-  if (!Array.isArray(playerState.unlockedLevels)) {
-    playerState.unlockedLevels = ['majak'];
-  }
-  if (!playerState.unlockedLevels.includes(key)) {
-    playerState.unlockedLevels.push(key);
-  }
-
-  savePlayerState();
-  return true;
-}
-
-// uložení aktuálního běhu jako vizuálu
-function saveCurrentRunAsVisual() {
-  if (!lastRunSummary) return;
-  playerState.savedVisual = {
-    ...lastRunSummary,
-    savedAt: Date.now()
-  };
-  savePlayerState();
-}
-
-// smazání uloženého vizuálu
-function clearSavedVisual() {
-  playerState.savedVisual = null;
-  savePlayerState();
-}
-
-// nastavení typu flash efektu
-function setFlashEffect(mode) {
-  playerState.flashEffect = mode || 'classic';
-  savePlayerState();
-}
-
-// nastavení ambientních efektů (checkboxy v tab HRÁČ)
-function setAmbientsFromUI(glow, shockwave, particles, saturate) {
-  playerState.ambients = {
-    glow: !!glow,
-    shockwave: !!shockwave,
-    particles: !!particles,
-    saturate: !!saturate
-  };
-  savePlayerState();
-}
-
-// -------------------------------------------------
-// MENU – přepínání záložek
-// -------------------------------------------------
+// ------------------------- MENU / UI ---------------------------
 
 function setMenuActive(which) {
-  // levý sloupec
   menuNewGame.classList.toggle('active', which === 'new');
   menuLevels.classList.toggle('active', which === 'levels');
   if (menuPlayer) {
@@ -1241,14 +1145,12 @@ function setMenuActive(which) {
   }
   menuHowTo.classList.toggle('active', which === 'how');
 
-  // pravá část – sekce
   menuSections.forEach(section => {
     const isActive = section.dataset.section === which;
     section.classList.toggle('menu-section-active', isActive);
   });
 }
 
-// kliky na hlavní záložky
 menuNewGame.addEventListener('click', () => {
   setMenuActive('new');
 });
@@ -1267,15 +1169,41 @@ menuHowTo.addEventListener('click', () => {
   setMenuActive('how');
 });
 
-// tlačítko „Hrát Maják“ v menu
-playMajakFromMenu.addEventListener('click', () => {
-  goToLevel('majak');
-});
+if (playMajakFromMenu) {
+  playMajakFromMenu.addEventListener('click', () => {
+    goToLevel('majak');
+  });
+}
 
-// -------------------------------------------------
-// LEVELY – play / buy tlačítka (volitelné v HTML)
-// -------------------------------------------------
+function showMenuScreen() {
+  music.pause();
+  menuScreen.classList.remove('hidden');
+  gameScreen.classList.add('hidden');
+  levelIntroOverlay.classList.add('overlay-hidden');
+  resultOverlay.classList.add('overlay-hidden');
+}
 
+function showLevelIntro() {
+  levelIntroOverlay.classList.remove('overlay-hidden');
+  resultOverlay.classList.add('overlay-hidden');
+}
+
+function goToLevel(key) {
+  if (!levels[key]) return;
+
+  if (!isLevelUnlocked(key)) {
+    alert('Tento level je zatím zamčený.');
+    return;
+  }
+
+  setCurrentLevel(key);
+  resetLevelState();
+  menuScreen.classList.add('hidden');
+  gameScreen.classList.remove('hidden');
+  showLevelIntro();
+}
+
+// Level karty
 function refreshLevelsUI() {
   const cards = document.querySelectorAll('.level-card[data-level-key]');
   cards.forEach(card => {
@@ -1295,7 +1223,6 @@ function refreshLevelsUI() {
       }
     } else {
       if (key === 'majak') {
-        // pro jistotu – první level vždy otevřený
         card.classList.remove('level-card-disabled');
         if (playBtn) playBtn.disabled = false;
         if (buyBtn) {
@@ -1314,12 +1241,10 @@ function refreshLevelsUI() {
   });
 }
 
-// eventy na play/buy tlačítka, pokud v HTML existují
 document.querySelectorAll('.level-play-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const key = btn.dataset.levelKey;
     if (!key) return;
-
     if (!isLevelUnlocked(key)) {
       alert('Tento level je zatím zamčený.');
       return;
@@ -1361,10 +1286,7 @@ document.querySelectorAll('.level-buy-btn').forEach(btn => {
   });
 });
 
-// -------------------------------------------------
-// HRÁČ – UI helpery (vše volitelné)
-// -------------------------------------------------
-
+// HRÁČ – UI helpery
 function updateCurrencyUI() {
   if (!currencyValueEl) return;
   const val = Number.isFinite(playerState.currency) ? playerState.currency : 0;
@@ -1397,11 +1319,11 @@ function refreshPlayerSettingsUI() {
     savedVisualText.textContent =
       'Zatím nemáš uložený žádný vizuál z dohraného levelu.';
     replaySavedVisualBtn.disabled = true;
-    clearSavedVisualBtn.disabled = true;
+    clearSavedVisualBtn.disabled  = true;
     return;
   }
 
-  const lvlDef  = (typeof levels === 'object' && levels) ? levels[sv.levelKey] : null;
+  const lvlDef  = levels[sv.levelKey];
   const lvlName = (lvlDef && lvlDef.name) ? lvlDef.name : sv.levelKey;
   const dateStr = sv.savedAt ? new Date(sv.savedAt).toLocaleString('cs-CZ') : '';
   let accText   = sv.accuracy;
@@ -1420,7 +1342,7 @@ function refreshPlayerSettingsUI() {
   clearSavedVisualBtn.disabled  = false;
 }
 
-// uložení nastavení hráče (HRÁČ tab)
+// Uložení nastavení hráče
 if (savePlayerSettingsBtn) {
   savePlayerSettingsBtn.addEventListener('click', () => {
     if (flashEffectSelect) {
@@ -1447,12 +1369,11 @@ if (savePlayerSettingsBtn) {
   });
 }
 
-// ovládání uloženého vizuálu
+// Uložený vizuál – ovládání
 if (replaySavedVisualBtn) {
   replaySavedVisualBtn.addEventListener('click', () => {
     const sv = playerState.savedVisual;
     if (!sv) return;
-
     if (!isLevelUnlocked(sv.levelKey)) {
       alert('Level uloženého vizuálu je zatím zamčený.');
       return;
@@ -1469,12 +1390,10 @@ if (clearSavedVisualBtn) {
   });
 }
 
-// Uložení vizuálu z výsledkového overlaye
 if (saveVisualBtn) {
   saveVisualBtn.addEventListener('click', () => {
     if (!lastRunSummary) return;
 
-    // první uložení zdarma
     if (!playerState.savedVisual) {
       saveCurrentRunAsVisual();
       alert('Vizuál byl uložen.');
@@ -1500,10 +1419,7 @@ if (saveVisualBtn) {
   });
 }
 
-// -------------------------------------------------
-// HERNÍ OVLÁDÁNÍ (start/restart/menu/mute)
-// -------------------------------------------------
-
+// Herní ovládání
 startBtn.addEventListener('click', () => {
   startLevel();
 });
@@ -1547,9 +1463,32 @@ muteBtn.addEventListener('click', () => {
   muteBtn.textContent = music.muted ? 'Unmute' : 'Mute';
 });
 
-// -------------------------------------------------
-// Hudba – načtení, timeline, dohrání
-// -------------------------------------------------
+// --------------------------- START LEVEL -----------------------
+
+function startLevel() {
+  resetLevelState();
+  levelIntroOverlay.classList.add('overlay-hidden');
+  resultOverlay.classList.add('overlay-hidden');
+  resetScrollTrackAnimation();
+
+  if (!pattern.length || totalScheduled === 0) {
+    buildPatternForMusic();
+  }
+
+  levelRunning = true;
+  statusText.textContent = 'Level běží – klikej na kapky rytmicky.';
+
+  restartBtn.disabled   = true;
+  playAgainBtn.disabled = true;
+  startBtn.disabled     = true;
+
+  music.currentTime = 0;
+  music.play();
+
+  schedulePattern();
+}
+
+// -------------------------- HUDBA / TIMELINE -------------------
 
 music.addEventListener('loadedmetadata', () => {
   const durationSec = music.duration;
@@ -1557,11 +1496,10 @@ music.addEventListener('loadedmetadata', () => {
   timeInfo.style.setProperty('--progress', 0);
 
   if (!isFinite(durationSec) || durationSec <= 0) {
-    // fallback – fixní pattern
     startBtn.disabled   = false;
     restartBtn.disabled = false;
-    pattern         = createPattern(20, BUBBLE_INTERVAL_SEC);
-    totalScheduled  = pattern.length;
+    pattern        = createPattern(20, BUBBLE_INTERVAL_SEC);
+    totalScheduled = pattern.length;
     return;
   }
 
@@ -1588,9 +1526,7 @@ music.addEventListener('ended', () => {
   }
 });
 
-// -------------------------------------------------
-// Background image status
-// -------------------------------------------------
+// ----------------------- Background image status ----------------
 
 bgImage1.addEventListener('load', () => {
   imageStatus.textContent = 'Obrázek levelu načten.';
@@ -1605,100 +1541,13 @@ bgImage1.addEventListener('error', () => {
   imageStatus.classList.add('error');
 });
 
-// -------------------------------------------------
-// PLAY / PAUSE tlačítko
-// -------------------------------------------------
-
-if (playPauseBtn) {
-  playPauseBtn.addEventListener('click', () => {
-    if (!music.src) return;
-
-    if (!music.paused) {
-      music.pause();
-      levelRunning = false;
-      playPauseBtn.textContent = '►';
-      statusText.textContent = 'Pauza';
-      return;
-    }
-
-    music.play();
-    levelRunning = true;
-    playPauseBtn.textContent = '❚❚';
-    statusText.textContent = '';
-  });
-}
-
-// -------------------------------------------------
-// MONETIZAČNÍ OBAL PRO endLevel
-// -------------------------------------------------
-
-// uložíme původní implementaci z game.js
-const originalEndLevel = endLevel;
-
-// přepíšeme endLevel – nejdřív se zavolá původní logika,
-// pak se přičte měna, odemkne další level a připraví uložitelný vizuál
-function endLevel(reason = 'Level je u konce.') {
-  // původní herní logika (overlay, statistiky, atd.)
-  originalEndLevel(reason);
-
-  const totalEvents = hits + misses;
-  const accuracyNum = totalEvents > 0 ? (hits / totalEvents) * 100 : 0;
-  const completedAll =
-    hits >= totalScheduled &&
-    totalScheduled > 0 &&
-    !gameOverBySoul;
-
-  lastRunSummary = {
-    levelKey: currentLevelKey,
-    score: score,
-    hits: hits,
-    misses: misses,
-    totalScheduled: totalScheduled,
-    accuracy: accuracyNum,
-    completedAll: completedAll
-  };
-
-  // 100 % completion → odemknout další level
-  if (completedAll) {
-    unlockNextLevel(currentLevelKey);
-  }
-
-  // přičtení měny = skóre
-  if (score > 0) {
-    addCurrency(score);
-    if (currencyInfoEl) {
-      currencyInfoEl.textContent =
-        'Za tento run získáváš ' + score + ' ✦ měny.';
-    }
-  } else if (currencyInfoEl) {
-    currencyInfoEl.textContent =
-      'Tentokrát jsi nezískal žádnou měnu.';
-  }
-
-  // nastavení tlačítka pro uložení vizuálu
-  if (saveVisualBtn) {
-    saveVisualBtn.disabled = !lastRunSummary;
-    if (playerState && playerState.savedVisual) {
-      saveVisualBtn.textContent =
-        'Přepsat uložený vizuál (cena ' + VISUAL_SAVE_PRICE + ' ✦)';
-    } else {
-      saveVisualBtn.textContent = 'Uložit tento vizuál';
-    }
-  }
-
-  refreshLevelsUI();
-}
-
-// -------------------------------------------------
-// Inicializace hry / UI
-// -------------------------------------------------
+// ------------------------ INITIALIZACE -------------------------
 
 updateBackgroundProgress(0);
 resetSoul();
 setCurrentLevel('majak');
 showMenuScreen();
 
-// refresh UI podle uloženého stavu hráče
 updateCurrencyUI();
 refreshPlayerSettingsUI();
 refreshLevelsUI();
