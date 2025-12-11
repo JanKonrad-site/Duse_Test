@@ -1,0 +1,266 @@
+.soul-wrapper {
+  position: absolute;
+  left: 25%;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+  transition: left 0.35s ease-out, top 0.35s ease-out;
+}
+
+.soul-float {
+  position: relative;
+  animation: soulFloat 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes soulFloat {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+.soul {
+  position: relative;
+  border-radius: 50%;
+  pointer-events: none;
+  transition:
+    width 0.2s ease-out,
+    height 0.2s ease-out,
+    opacity 0.2s ease-out;
+  backdrop-filter: blur(4px);
+}
+
+.soul-core {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 20px 8px rgba(86,188,249,0.8),
+    0 0 40px 14px rgba(110,215,255,0.55),
+    0 0 64px 22px rgba(180,235,255,0.35);
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 55%);
+  animation: soulGlow 3s linear 0s infinite alternate;
+}
+
+.soul-particles {
+  position: absolute;
+  top: calc(50% - 50px);
+  left: calc(50% - 50px);
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+}
+
+.soul-rotate {
+  position: absolute;
+  top: calc(50% - 4px);
+  left: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  animation: soulRotate 20s linear 0s infinite alternate;
+}
+
+.soul-angle,
+.soul-size,
+.soul-position,
+.soul-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.soul-particle-dot {
+  position: absolute;
+  top: calc(50% - 5px);
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: soulParticle 6s linear infinite alternate;
+}
+
+/* vícenásobné částice duše */
+
+.soul-angle:nth-child(1) { animation: soulAngle 10s steps(5) 0s infinite; }
+.soul-angle:nth-child(1) .soul-size { animation: soulSize 10s steps(5) 0s infinite; }
+.soul-angle:nth-child(1) .soul-position { animation: soulPosition 2s linear 0s infinite; }
+
+.soul-angle:nth-child(2) { animation: soulAngle 5s steps(3) -1.65s infinite; }
+.soul-angle:nth-child(2) .soul-size { animation: soulSize 5s steps(3) -1.65s infinite alternate; }
+.soul-angle:nth-child(2) .soul-position { animation: soulPosition 1.65s linear 0s infinite; }
+
+.soul-angle:nth-child(3) { animation: soulAngle 13.76s steps(8) -6.88s infinite; }
+.soul-angle:nth-child(3) .soul-size { animation: soulSize 6.88s steps(4) -5.16s infinite alternate; }
+.soul-angle:nth-child(3) .soul-position { animation: soulPosition 1.72s linear 0s infinite; }
+
+.soul-angle:nth-child(4) { animation: soulAngle 9s linear -2s infinite; }
+.soul-angle:nth-child(4) .soul-size { animation: soulSize 7s linear -3s infinite alternate; }
+.soul-angle:nth-child(4) .soul-position { animation: soulPosition 2.3s linear 0s infinite; }
+
+.soul-angle:nth-child(5) { animation: soulAngle 11s linear -4s infinite; }
+.soul-angle:nth-child(5) .soul-size { animation: soulSize 8s linear -2s infinite alternate; }
+.soul-angle:nth-child(5) .soul-position { animation: soulPosition 2.6s linear 0s infinite; }
+
+.soul-angle:nth-child(6) { animation: soulAngle 7s linear -3s infinite; }
+.soul-angle:nth-child(6) .soul-size { animation: soulSize 6s linear -2s infinite alternate; }
+.soul-angle:nth-child(6) .soul-position { animation: soulPosition 2.1s linear 0s infinite; }
+
+.soul-pulse { animation: soulPulse 1.5s linear 0s infinite alternate; }
+
+/* Animace duše */
+
+@keyframes soulGlow {
+  0% {
+    transform: rotate(0deg);
+    box-shadow:
+      0 0 16px 7px rgba(86,188,249,0.6),
+      0 0 32px 12px rgba(110,215,255,0.45),
+      0 0 52px 18px rgba(180,235,255,0.25);
+  }
+  100% {
+    transform: rotate(5deg);
+    box-shadow:
+      0 0 26px 10px rgba(86,188,249,0.9),
+      0 0 48px 18px rgba(110,215,255,0.7),
+      0 0 72px 24px rgba(200,245,255,0.45);
+  }
+}
+
+@keyframes soulRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes soulAngle {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes soulSize {
+  0%   { transform: scale(.25); }
+  100% { transform: scale(.6); }
+}
+
+@keyframes soulPosition {
+  0% {
+    transform: translate3d(0,0,0);
+    opacity: 1;
+  }
+  50% { opacity: 1; }
+  100% {
+    transform: translate3d(30px,30px,0);
+    opacity: 0;
+  }
+}
+
+@keyframes soulPulse {
+  0%   { transform: scale(1); }
+  100% { transform: scale(.7); }
+}
+
+@keyframes soulParticle {
+  0% {
+    box-shadow:
+      inset 0 0 10px 10px #0079e8,
+      0 0 26px 8px #0079e8,
+      inset 0 0 26px 26px #269aff;
+  }
+  50% {
+    box-shadow:
+      inset 0 0 10px 10px #2693ff,
+      0 0 38px 8px #2693ff,
+      inset 0 0 22px 22px #52abff;
+  }
+  100% {
+    box-shadow:
+      inset 0 0 10px 10px #485fe8,
+      0 0 44px 8px #485fe8,
+      inset 0 0 22px 22px #7d71e8;
+  }
+}
+
+/* pohyb / reakce duše na zásah */
+
+.soul-dash {
+  animation: soulDashMove 0.35s ease-out;
+}
+
+@keyframes soulDashMove {
+  0%   { filter: blur(0px); opacity: 1; }
+  40%  { filter: blur(1.5px); opacity: 0.9; }
+  100% { filter: blur(0px); opacity: 1; }
+}
+
+.soul-grow {
+  animation: soulGrow 0.22s ease-out;
+}
+
+@keyframes soulGrow {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.soul-flash {
+  animation: soulFlash 0.35s ease-out;
+}
+
+@keyframes soulFlash {
+  0% {
+    filter: brightness(1.7) drop-shadow(0 0 26px rgba(210,245,255,0.95));
+  }
+  100% {
+    filter: none;
+  }
+}
+/* Extra částice generované skriptem – duše se postupně „plní“ */
+.soul-extra-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(210, 245, 255, 0.95);
+  box-shadow: 0 0 10px rgba(180, 235, 255, 0.9);
+  transform-origin: center;
+  animation: soulExtraParticle 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes soulExtraParticle {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(var(--radius)) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(calc(var(--angle) + 360deg)) translateX(var(--radius)) scale(1.05);
+  }
+}
+/* -------------------------------------------------
+   DUŠE – responzivní velikost
+-------------------------------------------------- */
+
+/* malé mobily */
+@media (max-width: 480px) {
+  #soul {
+    transform: scale(0.30);
+  }
+}
+
+/* běžné mobily / menší tablety na výšku */
+@media (min-width: 481px) and (max-width: 768px) {
+  #soul {
+    transform: scale(0.45);
+  }
+}
+
+/* velké / ultraširoké monitory – může být o něco výraznější */
+@media (min-width: 1800px) {
+  #soul {
+    transform: scale(1.1);
+  }
+}
