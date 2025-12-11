@@ -1,3 +1,4 @@
+
 const menuSections = document.querySelectorAll('.menu-section');
 const playPauseBtn = document.getElementById('playPauseBtn');
 
