@@ -105,7 +105,7 @@
                   <h3>Maják II</h3>
                   <div class="level-meta">Level 2 · těžší rytmus, zamčený</div>
                   <p>
-                    Ještě se rodí v mlze… Odemkne se po <strong>100 % dokončení</strong> levelu „Maják“
+                    Ještě se rodí v mlze… Odemkne se po <strong>90 % úspěšnosti</strong> levelu „Maják“
                     nebo za měnu.
                   </p>
                   <div class="level-price">
@@ -125,22 +125,38 @@
           <!-- Sekce: HRÁČ (nastavení efektů + vizuál) -->
           <section class="menu-section menu-section-player" data-section="player">
             <div>
-              <div class="main-menu-heading">Hráč &amp; nastavení</div>
+              <div class="main-menu-heading">Hráč</div>
               <p class="main-menu-tagline">
-                Nastav si, jak moc má hra blikat, jaké ambientní efekty se použijí a sleduj svou měnu.
+                Tvoje měna, dočasné efekty a uložený vizuál. Efekty se kupují jako <strong>balíček na 3 dohrané levely</strong>.
               </p>
 
-              <div class="player-balance">
-                <div class="player-balance-label">Měna (světelné úlomky):</div>
-                <div class="player-balance-value" id="currencyValue">0 ✦</div>
+              <div class="player-shop-top">
+                <div class="player-balance">
+                  <div class="player-balance-label">Měna (světelné úlomky)</div>
+                  <div class="player-balance-value" id="currencyValue">0 ✦</div>
+                </div>
+
+                <div class="player-boost">
+                  <div class="player-boost-title">Efekt balíček (dočasné)</div>
+                  <div class="player-boost-sub">
+                    Aktivní pro <strong id="boostRunsLeft">0</strong> dohraných levelů.
+                  </div>
+                  <div class="player-boost-note">
+                    Změna mimo základní nastavení vyžaduje zakoupení balíčku.
+                  </div>
+                </div>
               </div>
 
-              <div class="player-settings-grid">
-                <div class="player-settings-column">
-                  <h3>Flash efekt při combu</h3>
-                  <p class="player-settings-help">
-                    Vyber, jak se má chovat celoplošný flash, který se aktivuje při combu (každých 5 zásahů).
-                  </p>
+              <div class="player-shop-grid">
+                <div class="shop-card">
+                  <div class="shop-card-head">
+                    <div>
+                      <div class="shop-card-title">Flashe (combo)</div>
+                      <div class="shop-card-sub">Celoplošné probliknutí při combu (každých 5 zásahů).</div>
+                    </div>
+                    <div class="shop-badge">VIZUÁL</div>
+                  </div>
+
                   <label class="player-field">
                     <span>Styl flash efektu</span>
                     <select id="flashEffectSelect">
@@ -151,13 +167,24 @@
                       <option value="off">Vypnuto</option>
                     </select>
                   </label>
+
+                  <div class="shop-card-foot">
+                    <div class="shop-price">
+                      Balíček: <strong>800 ✦</strong> / 3 levely
+                    </div>
+                    <div class="shop-hint">Základní nastavení je zdarma.</div>
+                  </div>
                 </div>
 
-                <div class="player-settings-column">
-                  <h3>Ambienty při pohlcení</h3>
-                  <p class="player-settings-help">
-                    Zapni/vypni jemné efekty, které se spouští při zásahu kapky.
-                  </p>
+                <div class="shop-card">
+                  <div class="shop-card-head">
+                    <div>
+                      <div class="shop-card-title">Ambienty (pohlcení)</div>
+                      <div class="shop-card-sub">Jemné efekty při zásahu kapky.</div>
+                    </div>
+                    <div class="shop-badge">AMBIENT</div>
+                  </div>
+
                   <div class="player-ambient-list">
                     <label class="ambient-item">
                       <input type="checkbox" id="ambientGlow">
@@ -176,23 +203,42 @@
                       <span>Silnější saturace barvy při zásahu</span>
                     </label>
                   </div>
+
+                  <div class="shop-card-foot">
+                    <div class="shop-price">
+                      Balíček: <strong>800 ✦</strong> / 3 levely
+                    </div>
+                    <div class="shop-hint">Balíček platí pro flash i ambienty zároveň.</div>
+                  </div>
+                </div>
+
+                <div class="shop-card shop-card-wide" id="savedVisualCard">
+                  <div class="shop-card-head">
+                    <div>
+                      <div class="shop-card-title">Uložený vizuál</div>
+                      <div class="shop-card-sub">Přehraj si vizuál z posledního uloženého dohraného levelu.</div>
+                    </div>
+                    <div class="shop-badge">REPLAY</div>
+                  </div>
+
+                  <p id="savedVisualText" class="saved-visual-text">
+                    Zatím nemáš uložený žádný vizuál z dohraného levelu.
+                  </p>
+
+                  <div class="saved-visual-actions">
+                    <button id="replaySavedVisualBtn" class="btn" disabled>Přehrát vizuál</button>
+                    <button id="clearSavedVisualBtn" class="btn" disabled>Smazat</button>
+                  </div>
                 </div>
               </div>
 
               <div class="player-actions">
-                <button id="savePlayerSettingsBtn" class="btn primary">Uložit nastavení</button>
+                <button id="savePlayerSettingsBtn" class="btn primary">Použít / koupit balíček efektů</button>
                 <span id="playerSettingsStatus" class="player-settings-status"></span>
               </div>
 
-              <div class="saved-visual-card" id="savedVisualCard">
-                <h3>Uložený vizuál</h3>
-                <p id="savedVisualText">
-                  Zatím nemáš uložený žádný vizuál z dohraného levelu.
-                </p>
-                <div class="saved-visual-actions">
-                  <button id="replaySavedVisualBtn" class="btn" disabled>Přehrát vizuál</button>
-                  <button id="clearSavedVisualBtn" class="btn" disabled>Smazat</button>
-                </div>
+              <div class="player-legal">
+                Pozn.: Efekt balíček se odečítá až po <strong>dokončení</strong> levelu. Přehrání vizuálu balíček neodečítá.
               </div>
             </div>
           </section>
@@ -342,16 +388,19 @@
       <div class="overlay-panel">
         <h2>Výsledek levelu</h2>
         <div id="resultStats"></div>
-
         <div id="currencyInfo" class="currency-info"></div>
 
         <div class="result-actions">
-          <button id="saveVisualBtn" class="btn">Uložit tento vizuál</button>
+          <button id="saveVisualBtn" class="btn" disabled>Uložit tento vizuál (cena 500 ✦)</button>
           <button id="playAgainBtn" class="btn primary">Hrát level znovu</button>
           <button id="backToMenuFromResult" class="btn">Zpět do menu</button>
         </div>
       </div>
     </div>
+  </div>
+
+  <div id="cursorLight"></div>
+
   </div>
 
   <div id="cursorLight"></div>

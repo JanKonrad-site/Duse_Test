@@ -1017,3 +1017,220 @@
     font-size: 12px;
   }
 }
+
+/* -------------------------------------------------
+   HRÁČ – monetizační shop styl (jen tato záložka)
+-------------------------------------------------- */
+
+.menu-section-player .player-shop-top{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  margin:16px 0 18px;
+}
+
+.menu-section-player .player-balance,
+.menu-section-player .player-boost,
+.menu-section-player .shop-card{
+  background: rgba(10, 14, 30, 0.55);
+  border: 1px solid rgba(0, 200, 255, 0.18);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+}
+
+.menu-section-player .player-balance{
+  padding:14px 16px;
+  min-width: 240px;
+  flex: 1 1 240px;
+}
+
+.menu-section-player .player-balance-label{
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+}
+
+.menu-section-player .player-balance-value{
+  margin-top: 6px;
+  font-size: 26px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 0 18px rgba(0, 200, 255, 0.25);
+}
+
+.menu-section-player .player-boost{
+  padding:14px 16px;
+  min-width: 280px;
+  flex: 2 1 320px;
+  border-color: rgba(138, 91, 255, 0.22);
+}
+
+.menu-section-player .player-boost-title{
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.menu-section-player .player-boost-sub{
+  margin-top: 6px;
+  color: rgba(255,255,255,0.75);
+}
+
+.menu-section-player .player-boost-note{
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.menu-section-player .player-shop-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+@media (max-width: 820px){
+  .menu-section-player .player-shop-grid{ grid-template-columns: 1fr; }
+}
+
+.menu-section-player .shop-card{
+  padding: 14px 16px;
+}
+
+.menu-section-player .shop-card-wide{
+  grid-column: 1 / -1;
+}
+
+.menu-section-player .shop-card-head{
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items:flex-start;
+  margin-bottom: 12px;
+}
+
+.menu-section-player .shop-card-title{
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.menu-section-player .shop-card-sub{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  max-width: 54ch;
+}
+
+.menu-section-player .shop-badge{
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(0,200,255,0.12);
+  border: 1px solid rgba(0,200,255,0.18);
+  color: rgba(255,255,255,0.78);
+}
+
+.menu-section-player .player-field{
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-section-player .player-field > span{
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+.menu-section-player select{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.92);
+  outline: none;
+}
+
+.menu-section-player select:focus{
+  border-color: rgba(0,200,255,0.45);
+  box-shadow: 0 0 0 3px rgba(0,200,255,0.12);
+}
+
+.menu-section-player .player-ambient-list{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.menu-section-player .ambient-item{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.88);
+}
+
+.menu-section-player .ambient-item input{
+  width: 18px;
+  height: 18px;
+}
+
+.menu-section-player .shop-card-foot{
+  margin-top: 12px;
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.menu-section-player .shop-price{
+  font-size: 12px;
+  color: rgba(255,255,255,0.78);
+}
+
+.menu-section-player .shop-hint{
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+}
+
+.menu-section-player .saved-visual-text{
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.75);
+}
+
+.menu-section-player .saved-visual-actions{
+  margin-top: 12px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.menu-section-player .player-actions{
+  margin-top: 16px;
+  display:flex;
+  gap: 12px;
+  align-items:center;
+  flex-wrap: wrap;
+}
+
+.menu-section-player .player-settings-status{
+  color: rgba(255,255,255,0.78);
+  font-size: 12px;
+}
+
+.menu-section-player .player-legal{
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
