@@ -67,19 +67,21 @@ if (playPauseBtn) {
 
 // --------------------- HRÁČ / MONETIZACE -----------------------
 
-const currencyValueEl          = document.getElementById('currencyValue');
-const flashEffectSelect        = document.getElementById('flashEffectSelect');
-const ambientGlowCheckbox      = document.getElementById('ambientGlow');
-const ambientShockwaveCheckbox = document.getElementById('ambientShockwave');
-const ambientParticlesCheckbox = document.getElementById('ambientParticles');
-const ambientSaturateCheckbox  = document.getElementById('ambientSaturate');
+const currencyValueEl      = document.getElementById('currencyValue');
+const playerSettingsStatus = document.getElementById('playerSettingsStatus');
 
-const savedVisualText          = document.getElementById('savedVisualText');
-const replaySavedVisualBtn     = document.getElementById('replaySavedVisualBtn');
-const clearSavedVisualBtn      = document.getElementById('clearSavedVisualBtn');
-const savePlayerSettingsBtn    = document.getElementById('savePlayerSettingsBtn');
-const playerSettingsStatus     = document.getElementById('playerSettingsStatus');
-const boostRunsLeftEl         = document.getElementById('boostRunsLeft');
+// Preview
+const effectPreviewNameEl = document.getElementById('effectPreviewName');
+const previewPlayBtn      = document.getElementById('previewPlayBtn');
+const previewBg           = document.getElementById('previewBg');
+const previewSoul         = document.getElementById('previewSoul');
+const previewBurst        = document.getElementById('previewBurst');
+const previewFlash        = document.getElementById('previewFlash');
+
+// Saved visual (ponecháno)
+const savedVisualText      = document.getElementById('savedVisualText');
+const replaySavedVisualBtn = document.getElementById('replaySavedVisualBtn');
+const clearSavedVisualBtn  = document.getElementById('clearSavedVisualBtn');
 
 const saveVisualBtn            = document.getElementById('saveVisualBtn');
 const currencyInfoEl           = document.getElementById('currencyInfo');
@@ -115,8 +117,8 @@ const VISUAL_SAVE_PRICE          = 500;  // cena za uložený / přepsaný vizu�
 const LEVEL_BASE_UNLOCK_PRICE    = 1500;
 
 // dočasné vizuální nastavení (flash, ambients)
-const VISUAL_SETTINGS_PRICE      = 800;  // cena za “balíček” nastavení efektů
-const VISUAL_SETTINGS_RUNS_COUNT = 3;    // na kolik dohraných her platí
+const EFFECT_CHARGE_PRICE = 100; // 1 kolo pro 1 efekt
+const EFFECT_MAX_CHARGES  = 3;   // max nabití na efekt
 
 // -------------------------- LEVELY -----------------------------
 
@@ -190,15 +192,27 @@ function getDefaultPlayerState() {
   return {
     currency: 0,
     unlockedLevels: ['majak'],
-    flashEffect: 'classic',
+
+    // Aktivní nastavení (to, co se opravdu použije ve hře)
+    flashEffect: 'classic', // zdarma
     ambients: {
-      glow: true,
-      shockwave: true,
-      particles: true,
-      saturate: false
+      glow: true,       // zdarma (základní reakce)
+      shockwave: false, // placené – default vypnuto
+      particles: false, // placené – default vypnuto
+      saturate: false   // placené – default vypnuto
     },
-    savedVisual: null,
-    visualBoostsLeft: 0   // kolik dohraných her ještě platí zakoupené efekty
+
+    // Nabití pro jednotlivé placené efekty (0–3 kol)
+    effectCharges: {
+      flash_soft: 0,
+      flash_strong: 0,
+      flash_mono: 0,
+      amb_shockwave: 0,
+      amb_particles: 0,
+      amb_saturate: 0
+    },
+
+    savedVisual: null
   };
 }
 
@@ -206,20 +220,60 @@ function loadPlayerState() {
   try {
     const raw = localStorage.getItem(PLAYER_STATE_KEY);
     if (!raw) return getDefaultPlayerState();
+
     const parsed = JSON.parse(raw);
     const def    = getDefaultPlayerState();
 
+    // Ambients normalizace
+    const parsedAmb = parsed.ambients || {};
+    const ambients = {
+      glow: parsedAmb.glow !== false,              // default true
+      shockwave: !!parsedAmb.shockwave,
+      particles: !!parsedAmb.particles,
+      saturate: !!parsedAmb.saturate
+    };
+
+    // Charges – výchozí + merge z uloženého stavu
+    const effectCharges = { ...def.effectCharges };
+    if (parsed.effectCharges && typeof parsed.effectCharges === 'object') {
+      Object.keys(effectCharges).forEach(k => {
+        const v = parsed.effectCharges[k];
+        if (Number.isFinite(v)) effectCharges[k] = Math.max(0, Math.min(EFFECT_MAX_CHARGES, Math.floor(v)));
+      });
+    }
+
+    // MIGRACE ze starého systému (balíček `visualBoostsLeft`)
+    // Pokud měl hráč nabitý balíček a měl aktivní některé efekty, převedeme to na jejich counter.
+    if (Number.isFinite(parsed.visualBoostsLeft) && parsed.visualBoostsLeft > 0) {
+      const oldLeft = Math.max(0, Math.min(EFFECT_MAX_CHARGES, Math.floor(parsed.visualBoostsLeft)));
+
+      // Flash (soft/strong/mono) – pokud byl aktivní, dostane nabití
+      switch (parsed.flashEffect) {
+        case 'soft':   effectCharges.flash_soft   = Math.max(effectCharges.flash_soft, oldLeft); break;
+        case 'strong': effectCharges.flash_strong = Math.max(effectCharges.flash_strong, oldLeft); break;
+        case 'mono':   effectCharges.flash_mono   = Math.max(effectCharges.flash_mono, oldLeft); break;
+        default: break;
+      }
+
+      // Ambienty – pokud byly zapnuté, dostanou nabití
+      const oa = parsed.ambients || {};
+      if (oa.shockwave) effectCharges.amb_shockwave = Math.max(effectCharges.amb_shockwave, oldLeft);
+      if (oa.particles) effectCharges.amb_particles = Math.max(effectCharges.amb_particles, oldLeft);
+      if (oa.saturate)  effectCharges.amb_saturate  = Math.max(effectCharges.amb_saturate,  oldLeft);
+    }
+
     return {
       currency: Number.isFinite(parsed.currency) ? parsed.currency : def.currency,
+
       unlockedLevels: Array.isArray(parsed.unlockedLevels)
         ? Array.from(new Set(['majak', ...parsed.unlockedLevels]))
         : ['majak'],
+
       flashEffect: parsed.flashEffect || def.flashEffect,
-      ambients: parsed.ambients || def.ambients,
-      savedVisual: parsed.savedVisual || null,
-      visualBoostsLeft: Number.isFinite(parsed.visualBoostsLeft)
-        ? parsed.visualBoostsLeft
-        : def.visualBoostsLeft
+      ambients,
+      effectCharges,
+
+      savedVisual: parsed.savedVisual || null
     };
   } catch (e) {
     console.warn('Nepodařilo se načíst playerState, resetuji.', e);
@@ -248,6 +302,175 @@ function addCurrency(amount) {
   playerState.currency = Math.max(0, playerState.currency + inc);
   savePlayerState();
 }
+// ---------------------- EFEKTY (jednotlivě) ----------------------
+
+const EFFECTS = {
+  // FLASH (1 aktivní)
+  flash_classic: { id: 'flash_classic', kind: 'flash', value: 'classic', paid: false, label: 'Klasický flash' },
+  flash_soft:    { id: 'flash_soft',    kind: 'flash', value: 'soft',    paid: true,  label: 'Měkčí flash' },
+  flash_strong:  { id: 'flash_strong',  kind: 'flash', value: 'strong',  paid: true,  label: 'Silný flash' },
+  flash_mono:    { id: 'flash_mono',    kind: 'flash', value: 'mono',    paid: true,  label: 'Mono flash' },
+  flash_off:     { id: 'flash_off',     kind: 'flash', value: 'off',     paid: false, label: 'Flashe vypnout' },
+
+  // AMBIENT (nezávislé toggly)
+  amb_glow:      { id: 'amb_glow',      kind: 'ambient', key: 'glow',      paid: false, label: 'Glow duše' },
+  amb_shockwave: { id: 'amb_shockwave', kind: 'ambient', key: 'shockwave', paid: true,  label: 'Shockwave' },
+  amb_particles: { id: 'amb_particles', kind: 'ambient', key: 'particles', paid: true,  label: 'Particles+' },
+  amb_saturate:  { id: 'amb_saturate',  kind: 'ambient', key: 'saturate',  paid: true,  label: 'Saturate' }
+};
+
+function getCharges(effectId) {
+  const map = (playerState && playerState.effectCharges) ? playerState.effectCharges : {};
+  const v = map[effectId];
+  return Number.isFinite(v) ? Math.max(0, Math.min(EFFECT_MAX_CHARGES, Math.floor(v))) : 0;
+}
+
+function setCharges(effectId, value) {
+  if (!playerState.effectCharges) playerState.effectCharges = {};
+  playerState.effectCharges[effectId] =
+    Math.max(0, Math.min(EFFECT_MAX_CHARGES, Math.floor(value || 0)));
+}
+
+function isEffectActive(effectId) {
+  const e = EFFECTS[effectId];
+  if (!e) return false;
+
+  if (e.kind === 'flash') {
+    return (playerState.flashEffect || 'classic') === e.value;
+  }
+
+  if (e.kind === 'ambient') {
+    const a = playerState.ambients || {};
+    return !!a[e.key];
+  }
+
+  return false;
+}
+
+function deactivateEffect(effectId) {
+  const e = EFFECTS[effectId];
+  if (!e) return false;
+
+  if (e.kind === 'flash') {
+    // návrat na free základ
+    playerState.flashEffect = 'classic';
+    return true;
+  }
+
+  if (e.kind === 'ambient') {
+    if (!playerState.ambients) playerState.ambients = {};
+    // glow může být vypínatelný (zdarma), ostatní jen false
+    playerState.ambients[e.key] = false;
+    return true;
+  }
+
+  return false;
+}
+
+function activateEffect(effectId) {
+  const e = EFFECTS[effectId];
+  if (!e) return { ok: false, msg: 'Neznámý efekt.' };
+
+  // placené musí mít nabití
+  if (e.paid && getCharges(effectId) <= 0) {
+    return { ok: false, msg: 'Nemáš nabito. Kup alespoň 1 kolo (100 ✦).' };
+  }
+
+  if (e.kind === 'flash') {
+    playerState.flashEffect = e.value;
+    return { ok: true };
+  }
+
+  if (e.kind === 'ambient') {
+    if (!playerState.ambients) playerState.ambients = {};
+    playerState.ambients[e.key] = true;
+    return { ok: true };
+  }
+
+  return { ok: false, msg: 'Neplatný typ efektu.' };
+}
+
+function sanitizeActiveEffects() {
+  let changed = false;
+
+  // cap + cleanup charges
+  if (!playerState.effectCharges) playerState.effectCharges = {};
+  Object.keys(getDefaultPlayerState().effectCharges).forEach(id => {
+    const v = getCharges(id);
+    if (playerState.effectCharges[id] !== v) {
+      playerState.effectCharges[id] = v;
+      changed = true;
+    }
+  });
+
+  // pokud je placený aktivní bez nabití → vypnout
+  Object.keys(EFFECTS).forEach(id => {
+    const e = EFFECTS[id];
+    if (!e || !e.paid) return;
+    if (isEffectActive(id) && getCharges(id) <= 0) {
+      deactivateEffect(id);
+      changed = true;
+    }
+  });
+
+  return changed;
+}
+
+function buyEffectCharge(effectId) {
+  const e = EFFECTS[effectId];
+  if (!e) return;
+  if (!e.paid) return;
+
+  const current = getCharges(effectId);
+  if (current >= EFFECT_MAX_CHARGES) return;
+
+  const cost = EFFECT_CHARGE_PRICE;
+  if (playerState.currency < cost) {
+    alert('Nemáš dost měny. 1 kolo stojí ' + cost + ' ✦.');
+    return;
+  }
+
+  const ok = confirm('Koupit +1 kolo pro efekt „' + e.label + '“ za ' + cost + ' ✦?');
+  if (!ok) return;
+
+  if (!spendCurrency(cost)) {
+    alert('Platba se nepodařila.');
+    return;
+  }
+
+  setCharges(effectId, current + 1);
+  savePlayerState();
+}
+
+function consumeChargesAfterRun() {
+  // odečítáme jen placené EFEKTY, které jsou AKTIVNÍ v době dohrání
+  const consumed = [];
+
+  Object.keys(EFFECTS).forEach(id => {
+    const e = EFFECTS[id];
+    if (!e || !e.paid) return;
+    if (!isEffectActive(id)) return;
+
+    const before = getCharges(id);
+    if (before <= 0) return;
+
+    const after = before - 1;
+    setCharges(id, after);
+    consumed.push({ id, before, after });
+
+    if (after <= 0) {
+      deactivateEffect(id);
+    }
+  });
+
+  // pokud jsme něco změnili (charges nebo auto-vypnutí), uložíme
+  if (consumed.length > 0) {
+    savePlayerState();
+  }
+
+  return consumed;
+}
+
 
 function spendCurrency(amount) {
   if (!Number.isFinite(amount) || amount <= 0) return false;
@@ -1423,6 +1646,10 @@ function goToLevel(key) {
 
   setCurrentLevel(key);
   resetLevelState();
+  // pokud je něco aktivní bez nabití (např. po reloadu), vypneme to
+if (sanitizeActiveEffects()) {
+  savePlayerState();
+}
   menuScreen.classList.add('hidden');
   gameScreen.classList.remove('hidden');
   showLevelIntro();
@@ -1519,29 +1746,82 @@ function updateCurrencyUI() {
 }
 
 function refreshPlayerSettingsUI() {
-  const amb = playerState.ambients || {};
-
-  if (boostRunsLeftEl) {
-    const left = (typeof playerState.visualBoostsLeft === 'number') ? playerState.visualBoostsLeft : 0;
-    boostRunsLeftEl.textContent = String(Math.max(0, left));
+  // 1) Oprava případných expirovaných aktivních efektů
+  const changed = sanitizeActiveEffects();
+  if (changed) {
+    // nevolej savePlayerState() tady (jinak recursion); změny se dorovnají při dalších save
   }
 
-  if (flashEffectSelect) {
-    flashEffectSelect.value = playerState.flashEffect || 'classic';
-  }
-  if (ambientGlowCheckbox) {
-    ambientGlowCheckbox.checked = amb.glow !== false;
-  }
-  if (ambientShockwaveCheckbox) {
-    ambientShockwaveCheckbox.checked = amb.shockwave !== false;
-  }
-  if (ambientParticlesCheckbox) {
-    ambientParticlesCheckbox.checked = amb.particles !== false;
-  }
-  if (ambientSaturateCheckbox) {
-    ambientSaturateCheckbox.checked = !!amb.saturate;
-  }
+  // 2) Stav efektů do karet (charges, aktivní badge, disable tlačítek)
+  document.querySelectorAll('[data-charges-for]').forEach(el => {
+    const id = el.dataset.chargesFor;
+    const e = EFFECTS[id];
+    if (!e) return;
+    if (!e.paid) {
+      el.textContent = 'ZDARMA';
+      return;
+    }
+    el.textContent = getCharges(id) + '/' + EFFECT_MAX_CHARGES;
+  });
 
+  document.querySelectorAll('[data-active-for]').forEach(el => {
+    const id = el.dataset.activeFor;
+    const e = EFFECTS[id];
+    if (!e) return;
+
+    const active = isEffectActive(id);
+    if (e.paid) {
+      el.textContent = active ? 'AKTIVNÍ' : 'NEAKTIVNÍ';
+      el.classList.toggle('is-active', active);
+    } else {
+      // u free efektů necháme badge spíš neutrální, ale zvýrazníme aktivní
+      el.textContent = active ? 'AKTIVNÍ' : '—';
+      el.classList.toggle('is-active', active);
+    }
+  });
+
+  document.querySelectorAll('[data-buy]').forEach(btn => {
+    const id = btn.dataset.buy;
+    const e = EFFECTS[id];
+    if (!e) return;
+
+    if (!e.paid) {
+      btn.disabled = true;
+      return;
+    }
+
+    const c = getCharges(id);
+    btn.disabled = c >= EFFECT_MAX_CHARGES;
+    btn.textContent = (c >= EFFECT_MAX_CHARGES)
+      ? 'Nabito (3/3)'
+      : ('Koupit +1 (' + EFFECT_CHARGE_PRICE + ' ✦)');
+  });
+
+  document.querySelectorAll('[data-activate]').forEach(btn => {
+    const id = btn.dataset.activate;
+    const e = EFFECTS[id];
+    if (!e) return;
+
+    const active = isEffectActive(id);
+    const canActivate = (!e.paid) ? true : (getCharges(id) > 0);
+
+    // pokud není aktivní a nemá nabití → disable
+    btn.disabled = (!active && !canActivate);
+
+    // text
+    if (e.kind === 'ambient') {
+      btn.textContent = active ? 'Vypnout' : (e.paid ? 'Aktivovat' : 'Přepnout');
+    } else {
+      btn.textContent = active ? 'Aktivní' : 'Aktivovat';
+    }
+
+    // u flash tlačítek "Aktivní" necháme disabled, aby to bylo jasné
+    if (e.kind === 'flash' && active) {
+      btn.disabled = true;
+    }
+  });
+
+  // 3) Saved visual (ponecháno)
   if (!savedVisualText || !replaySavedVisualBtn || !clearSavedVisualBtn) return;
 
   const sv = playerState.savedVisual;
@@ -1571,6 +1851,7 @@ function refreshPlayerSettingsUI() {
   replaySavedVisualBtn.disabled = false;
   clearSavedVisualBtn.disabled  = false;
 }
+
 
 // Uložení nastavení hráče (placené, dočasné)
 if (savePlayerSettingsBtn) {
@@ -1646,6 +1927,125 @@ if (savePlayerSettingsBtn) {
       }
       return;
     }
+    // ---------------------- UI: efekty (preview / buy / activate) ----------------------
+
+let selectedPreviewEffectId = 'flash_classic';
+
+function selectEffectForPreview(effectId) {
+  if (!EFFECTS[effectId]) return;
+  selectedPreviewEffectId = effectId;
+
+  if (effectPreviewNameEl) {
+    effectPreviewNameEl.textContent = EFFECTS[effectId].label || effectId;
+  }
+}
+
+function playPreview(effectId) {
+  const e = EFFECTS[effectId];
+  if (!e) return;
+
+  // reset animací
+  if (previewFlash) {
+    previewFlash.classList.remove('play', 'fx-soft', 'fx-strong', 'fx-mono');
+    void previewFlash.offsetWidth;
+  }
+  if (previewBurst) {
+    previewBurst.classList.remove('play');
+    void previewBurst.offsetWidth;
+  }
+  if (previewSoul) {
+    previewSoul.classList.remove('play-glow');
+    void previewSoul.offsetWidth;
+  }
+  const worldEl = previewFlash ? previewFlash.closest('.preview-world') : null;
+  if (worldEl) {
+    worldEl.classList.remove('play-saturate');
+    void worldEl.offsetWidth;
+  }
+
+  // přehrání dle typu
+  if (e.kind === 'flash') {
+    if (!previewFlash) return;
+
+    if (e.value === 'soft')   previewFlash.classList.add('play', 'fx-soft');
+    if (e.value === 'strong') previewFlash.classList.add('play', 'fx-strong');
+    if (e.value === 'mono')   previewFlash.classList.add('play', 'fx-mono');
+    if (e.value === 'classic') previewFlash.classList.add('play', 'fx-soft'); // classic ukážeme jako soft vibe
+    if (e.value === 'off') {
+      // nic – jen krátké "ticho"
+    }
+  }
+
+  if (e.kind === 'ambient') {
+    if (e.key === 'shockwave' && previewBurst) previewBurst.classList.add('play');
+    if (e.key === 'glow' && previewSoul) previewSoul.classList.add('play-glow');
+    if (e.key === 'saturate' && worldEl) worldEl.classList.add('play-saturate');
+    if (e.key === 'particles') {
+      // částice jen symbolicky: krátký burst + glow
+      if (previewBurst) previewBurst.classList.add('play');
+      if (previewSoul) previewSoul.classList.add('play-glow');
+    }
+  }
+}
+
+// Clicky na kartách
+document.querySelectorAll('[data-preview]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.preview;
+    selectEffectForPreview(id);
+    playPreview(id);
+  });
+});
+
+document.querySelectorAll('[data-buy]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.buy;
+    buyEffectCharge(id);
+    refreshPlayerSettingsUI();
+  });
+});
+
+document.querySelectorAll('[data-activate]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.activate;
+    const e = EFFECTS[id];
+    if (!e) return;
+
+    // ambienty jsou toggle
+    if (e.kind === 'ambient') {
+      if (isEffectActive(id)) {
+        deactivateEffect(id);
+        savePlayerState();
+        refreshPlayerSettingsUI();
+        return;
+      }
+      const res = activateEffect(id);
+      if (!res.ok) {
+        if (playerSettingsStatus) playerSettingsStatus.textContent = res.msg || '';
+        return;
+      }
+      savePlayerState();
+      refreshPlayerSettingsUI();
+      return;
+    }
+
+    // flash: přepíná se vždy na daný styl
+    const res = activateEffect(id);
+    if (!res.ok) {
+      if (playerSettingsStatus) playerSettingsStatus.textContent = res.msg || '';
+      return;
+    }
+    savePlayerState();
+    refreshPlayerSettingsUI();
+  });
+});
+
+if (previewPlayBtn) {
+  previewPlayBtn.addEventListener('click', () => {
+    playPreview(selectedPreviewEffectId);
+  });
+}
+
 
     // 3B) Ne-default → je to "boost balíček" na X her, musí stát měnu
     const price = VISUAL_SETTINGS_PRICE;

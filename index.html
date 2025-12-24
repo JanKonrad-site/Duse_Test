@@ -123,125 +123,267 @@
           </section>
 
           <!-- Sekce: HRÁČ (nastavení efektů + vizuál) -->
-          <section class="menu-section menu-section-player" data-section="player">
-            <div>
-              <div class="main-menu-heading">Hráč</div>
-              <p class="main-menu-tagline">
-                Tvoje měna, dočasné efekty a uložený vizuál. Efekty se kupují jako <strong>balíček na 3 dohrané levely</strong>.
-              </p>
+         <section class="menu-section menu-section-player" data-section="player">
+  <div>
+    <div class="main-menu-heading">Hráč</div>
+    <p class="main-menu-tagline">
+      Nakupuješ <strong>jednotlivé efekty</strong>. Každý efekt má nabití na <strong>0–3 dohrané levely</strong>.
+      <strong>1 kolo = 100 ✦</strong>. Efekt se odečítá až po <strong>dokončení</strong> levelu.
+    </p>
 
-              <div class="player-shop-top">
-                <div class="player-balance">
-                  <div class="player-balance-label">Měna (světelné úlomky)</div>
-                  <div class="player-balance-value" id="currencyValue">0 ✦</div>
-                </div>
+    <div class="player-shop-top">
+      <div class="player-balance">
+        <div class="player-balance-label">Měna (světelné úlomky)</div>
+        <div class="player-balance-value" id="currencyValue">0 ✦</div>
+      </div>
 
-                <div class="player-boost">
-                  <div class="player-boost-title">Efekt balíček (dočasné)</div>
-                  <div class="player-boost-sub">
-                    Aktivní pro <strong id="boostRunsLeft">0</strong> dohraných levelů.
-                  </div>
-                  <div class="player-boost-note">
-                    Změna mimo základní nastavení vyžaduje zakoupení balíčku.
-                  </div>
-                </div>
+      <div class="player-preview-card">
+        <div class="player-preview-head">
+          <div class="player-preview-title">Náhled efektu</div>
+          <div class="player-preview-sub" id="effectPreviewName">Vyber efekt a dej „Přehrát“</div>
+        </div>
+
+        <div class="player-preview-stage" id="effectPreviewStage">
+          <div class="preview-world">
+            <div class="preview-bg" id="previewBg"></div>
+            <div class="preview-soul" id="previewSoul"></div>
+            <div class="preview-burst" id="previewBurst"></div>
+            <div class="preview-flash" id="previewFlash"></div>
+          </div>
+        </div>
+
+        <div class="player-preview-actions">
+          <button id="previewPlayBtn" class="btn">Přehrát</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-shop-grid player-shop-grid-v2">
+
+      <!-- FLASHE -->
+      <div class="shop-card shop-card-wide">
+        <div class="shop-card-head">
+          <div>
+            <div class="shop-card-title">Flashe (combo)</div>
+            <div class="shop-card-sub">Celoplošné probliknutí při combu (každých 5 zásahů).</div>
+          </div>
+          <div class="shop-badge">FLASH</div>
+        </div>
+
+        <div class="effects-grid">
+          <!-- Zdarma -->
+          <div class="effect-item" data-effect-id="flash_classic">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Klasický neonový flash</div>
+                <div class="effect-sub">Základní styl (zdarma).</div>
               </div>
-
-              <div class="player-shop-grid">
-                <div class="shop-card">
-                  <div class="shop-card-head">
-                    <div>
-                      <div class="shop-card-title">Flashe (combo)</div>
-                      <div class="shop-card-sub">Celoplošné probliknutí při combu (každých 5 zásahů).</div>
-                    </div>
-                    <div class="shop-badge">VIZUÁL</div>
-                  </div>
-
-                  <label class="player-field">
-                    <span>Styl flash efektu</span>
-                    <select id="flashEffectSelect">
-                      <option value="classic">Klasický neonový flash</option>
-                      <option value="soft">Měkčí, decentní flash</option>
-                      <option value="strong">Silný, agresivní flash</option>
-                      <option value="mono">Jas bez barev (mono)</option>
-                      <option value="off">Vypnuto</option>
-                    </select>
-                  </label>
-
-                  <div class="shop-card-foot">
-                    <div class="shop-price">
-                      Balíček: <strong>800 ✦</strong> / 3 levely
-                    </div>
-                    <div class="shop-hint">Základní nastavení je zdarma.</div>
-                  </div>
-                </div>
-
-                <div class="shop-card">
-                  <div class="shop-card-head">
-                    <div>
-                      <div class="shop-card-title">Ambienty (pohlcení)</div>
-                      <div class="shop-card-sub">Jemné efekty při zásahu kapky.</div>
-                    </div>
-                    <div class="shop-badge">AMBIENT</div>
-                  </div>
-
-                  <div class="player-ambient-list">
-                    <label class="ambient-item">
-                      <input type="checkbox" id="ambientGlow">
-                      <span>Glow duše při zásahu</span>
-                    </label>
-                    <label class="ambient-item">
-                      <input type="checkbox" id="ambientShockwave">
-                      <span>Barevná vlna (shockwave) v pozadí</span>
-                    </label>
-                    <label class="ambient-item">
-                      <input type="checkbox" id="ambientParticles">
-                      <span>Další částice kolem duše</span>
-                    </label>
-                    <label class="ambient-item">
-                      <input type="checkbox" id="ambientSaturate">
-                      <span>Silnější saturace barvy při zásahu</span>
-                    </label>
-                  </div>
-
-                  <div class="shop-card-foot">
-                    <div class="shop-price">
-                      Balíček: <strong>800 ✦</strong> / 3 levely
-                    </div>
-                    <div class="shop-hint">Balíček platí pro flash i ambienty zároveň.</div>
-                  </div>
-                </div>
-
-                <div class="shop-card shop-card-wide" id="savedVisualCard">
-                  <div class="shop-card-head">
-                    <div>
-                      <div class="shop-card-title">Uložený vizuál</div>
-                      <div class="shop-card-sub">Přehraj si vizuál z posledního uloženého dohraného levelu.</div>
-                    </div>
-                    <div class="shop-badge">REPLAY</div>
-                  </div>
-
-                  <p id="savedVisualText" class="saved-visual-text">
-                    Zatím nemáš uložený žádný vizuál z dohraného levelu.
-                  </p>
-
-                  <div class="saved-visual-actions">
-                    <button id="replaySavedVisualBtn" class="btn" disabled>Přehrát vizuál</button>
-                    <button id="clearSavedVisualBtn" class="btn" disabled>Smazat</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="player-actions">
-                <button id="savePlayerSettingsBtn" class="btn primary">Použít / koupit balíček efektů</button>
-                <span id="playerSettingsStatus" class="player-settings-status"></span>
-              </div>
-
-              <div class="player-legal">
-                Pozn.: Efekt balíček se odečítá až po <strong>dokončení</strong> levelu. Přehrání vizuálu balíček neodečítá.
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="flash_classic">—</span>
+                <span class="effect-charges" data-charges-for="flash_classic">ZDARMA</span>
               </div>
             </div>
-          </section>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="flash_classic">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="flash_classic" disabled>Zdarma</button>
+              <button class="btn primary effect-activate-btn" data-activate="flash_classic">Aktivovat</button>
+            </div>
+          </div>
+
+          <!-- Placené -->
+          <div class="effect-item" data-effect-id="flash_soft">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Měkčí flash</div>
+                <div class="effect-sub">Decentní, méně agresivní.</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="flash_soft">NEAKTIVNÍ</span>
+                <span class="effect-charges" data-charges-for="flash_soft">0/3</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="flash_soft">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="flash_soft">Koupit +1 (100 ✦)</button>
+              <button class="btn primary effect-activate-btn" data-activate="flash_soft">Aktivovat</button>
+            </div>
+          </div>
+
+          <div class="effect-item" data-effect-id="flash_strong">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Silný flash</div>
+                <div class="effect-sub">Intenzivní, agresivní vibe.</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="flash_strong">NEAKTIVNÍ</span>
+                <span class="effect-charges" data-charges-for="flash_strong">0/3</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="flash_strong">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="flash_strong">Koupit +1 (100 ✦)</button>
+              <button class="btn primary effect-activate-btn" data-activate="flash_strong">Aktivovat</button>
+            </div>
+          </div>
+
+          <div class="effect-item" data-effect-id="flash_mono">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Mono flash</div>
+                <div class="effect-sub">Bez barev, jen světlo.</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="flash_mono">NEAKTIVNÍ</span>
+                <span class="effect-charges" data-charges-for="flash_mono">0/3</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="flash_mono">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="flash_mono">Koupit +1 (100 ✦)</button>
+              <button class="btn primary effect-activate-btn" data-activate="flash_mono">Aktivovat</button>
+            </div>
+          </div>
+
+          <!-- Zdarma: vypnout -->
+          <div class="effect-item" data-effect-id="flash_off">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Flashe vypnout</div>
+                <div class="effect-sub">Bez flash efektu (zdarma).</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="flash_off">—</span>
+                <span class="effect-charges" data-charges-for="flash_off">ZDARMA</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="flash_off">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="flash_off" disabled>Zdarma</button>
+              <button class="btn primary effect-activate-btn" data-activate="flash_off">Aktivovat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AMBIENTY -->
+      <div class="shop-card shop-card-wide">
+        <div class="shop-card-head">
+          <div>
+            <div class="shop-card-title">Ambienty (pohlcení)</div>
+            <div class="shop-card-sub">Efekty při zásahu kapky.</div>
+          </div>
+          <div class="shop-badge">AMBIENT</div>
+        </div>
+
+        <div class="effects-grid">
+          <!-- Zdarma -->
+          <div class="effect-item" data-effect-id="amb_glow">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Glow duše při zásahu</div>
+                <div class="effect-sub">Základní reakce duše (zdarma).</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="amb_glow">—</span>
+                <span class="effect-charges" data-charges-for="amb_glow">ZDARMA</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="amb_glow">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="amb_glow" disabled>Zdarma</button>
+              <button class="btn primary effect-activate-btn" data-activate="amb_glow">Přepnout</button>
+            </div>
+          </div>
+
+          <!-- Placené -->
+          <div class="effect-item" data-effect-id="amb_shockwave">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Barevná vlna (shockwave)</div>
+                <div class="effect-sub">Výbuch barvy v pozadí při zásahu.</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="amb_shockwave">NEAKTIVNÍ</span>
+                <span class="effect-charges" data-charges-for="amb_shockwave">0/3</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="amb_shockwave">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="amb_shockwave">Koupit +1 (100 ✦)</button>
+              <button class="btn primary effect-activate-btn" data-activate="amb_shockwave">Aktivovat</button>
+            </div>
+          </div>
+
+          <div class="effect-item" data-effect-id="amb_particles">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Další částice kolem duše</div>
+                <div class="effect-sub">Více drobných částic (výraznější vibe).</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="amb_particles">NEAKTIVNÍ</span>
+                <span class="effect-charges" data-charges-for="amb_particles">0/3</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="amb_particles">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="amb_particles">Koupit +1 (100 ✦)</button>
+              <button class="btn primary effect-activate-btn" data-activate="amb_particles">Aktivovat</button>
+            </div>
+          </div>
+
+          <div class="effect-item" data-effect-id="amb_saturate">
+            <div class="effect-top">
+              <div>
+                <div class="effect-title">Silnější saturace při zásahu</div>
+                <div class="effect-sub">Barvy budou „šťavnatější“.</div>
+              </div>
+              <div class="effect-meta">
+                <span class="effect-active" data-active-for="amb_saturate">NEAKTIVNÍ</span>
+                <span class="effect-charges" data-charges-for="amb_saturate">0/3</span>
+              </div>
+            </div>
+            <div class="effect-actions">
+              <button class="btn effect-preview-btn" data-preview="amb_saturate">Náhled</button>
+              <button class="btn effect-buy-btn" data-buy="amb_saturate">Koupit +1 (100 ✦)</button>
+              <button class="btn primary effect-activate-btn" data-activate="amb_saturate">Aktivovat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ULOŽENÝ VIZUÁL – nechávám -->
+      <div class="shop-card shop-card-wide" id="savedVisualCard">
+        <div class="shop-card-head">
+          <div>
+            <div class="shop-card-title">Uložený vizuál</div>
+            <div class="shop-card-sub">Přehraj si vizuál z posledního uloženého dohraného levelu.</div>
+          </div>
+          <div class="shop-badge">REPLAY</div>
+        </div>
+
+        <p id="savedVisualText" class="saved-visual-text">
+          Zatím nemáš uložený žádný vizuál z dohraného levelu.
+        </p>
+
+        <div class="saved-visual-actions">
+          <button id="replaySavedVisualBtn" class="btn" disabled>Přehrát vizuál</button>
+          <button id="clearSavedVisualBtn" class="btn" disabled>Smazat</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-actions">
+      <span id="playerSettingsStatus" class="player-settings-status"></span>
+    </div>
+
+    <div class="player-legal">
+      Pozn.: Odečet kol probíhá až po <strong>dokončení</strong> levelu. Přehrání vizuálu kola neodečítá.
+    </div>
+  </div>
+</section>
+
 
           <!-- Sekce: JAK HRÁT – animovaný náhled -->
           <section class="menu-section menu-section-howto" data-section="how">

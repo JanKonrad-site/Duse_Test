@@ -1234,3 +1234,170 @@
   font-size: 12px;
   color: rgba(255,255,255,0.55);
 }
+/* -------------------------------------------------
+   HRÁČ – v2 (náhled + jednotlivé efekty)
+-------------------------------------------------- */
+
+.player-shop-grid-v2 {
+  display: grid;
+  gap: 16px;
+}
+
+.player-preview-card {
+  width: min(520px, 100%);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.25);
+}
+
+.player-preview-head {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.player-preview-title {
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.player-preview-sub {
+  opacity: 0.8;
+  font-size: 0.95rem;
+}
+
+.player-preview-stage {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: radial-gradient(circle at 30% 30%, rgba(120,140,255,0.20), rgba(0,0,0,0.55));
+}
+
+.preview-world {
+  position: relative;
+  height: 190px;
+}
+
+.preview-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.95;
+  filter: grayscale(0.4);
+}
+
+.preview-soul {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.92), rgba(120,140,255,0.35), rgba(0,0,0,0));
+  box-shadow: 0 0 22px rgba(120,140,255,0.55);
+}
+
+.preview-burst {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(255,80,200,0.45), rgba(0,0,0,0));
+  filter: saturate(1.2);
+}
+
+.preview-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.player-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.effects-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-top: 12px;
+}
+
+.effect-item {
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.effect-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.effect-title {
+  font-weight: 700;
+}
+
+.effect-sub {
+  opacity: 0.8;
+  font-size: 0.92rem;
+  margin-top: 2px;
+}
+
+.effect-meta {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  align-content: start;
+}
+
+.effect-charges {
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.effect-active {
+  font-size: 0.78rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  opacity: 0.85;
+}
+
+.effect-active.is-active {
+  opacity: 1;
+  border-color: rgba(120,255,220,0.45);
+  background: rgba(120,255,220,0.10);
+}
+
+.effect-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Preview animace */
+@keyframes pv_flash_soft { 0%{opacity:0} 20%{opacity:.55} 100%{opacity:0} }
+@keyframes pv_flash_strong { 0%{opacity:0} 20%{opacity:.92} 60%{opacity:.55} 100%{opacity:0} }
+@keyframes pv_flash_mono { 0%{opacity:0} 18%{opacity:.75} 100%{opacity:0} }
+@keyframes pv_burst { 0%{opacity:0; transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0; transform:translate(-50%,-50%) scale(6.2)} }
+@keyframes pv_glow { 0%{transform:translate(-50%,-50%) scale(1)} 30%{transform:translate(-50%,-50%) scale(1.18)} 100%{transform:translate(-50%,-50%) scale(1)} }
+
+.preview-flash.play.fx-soft  { background: rgba(120,140,255,0.55); animation: pv_flash_soft 420ms ease-out; }
+.preview-flash.play.fx-strong{ background: rgba(255,70,220,0.65); animation: pv_flash_strong 520ms ease-out; }
+.preview-flash.play.fx-mono  { background: rgba(255,255,255,0.70); animation: pv_flash_mono 420ms ease-out; }
+
+.preview-burst.play { animation: pv_burst 620ms ease-out; }
+.preview-soul.play-glow { animation: pv_glow 520ms ease-out; }
+.preview-world.play-saturate { filter: saturate(1.35) contrast(1.05); }
